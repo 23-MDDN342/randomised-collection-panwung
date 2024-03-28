@@ -1,3 +1,70 @@
+HalfPiece = class {
+  /**
+   * Creates a triangle which is half of the jigsaw piece
+   * @param {number} x x coord of corner of triangle
+   * @param {number} y y coord of corner of triangle
+   * @param {number} edgeLength Edge length of triangle
+   * @param {boolean} isPlayer Determines whether the half piece is a player or dealer
+   */
+  constructor(x, y, edgeLength, isPlayer) {
+    this.accessories = [];
+    this.cards = [];
+    this.value = 0;
+
+    this.x = x;
+    this.y = y;
+    this.edgeLength = edgeLength;
+    
+    this.playerType = (isPlayer) ? "player" : "dealer";
+  }
+
+  /**
+   * Draws two cards
+   * @param {CARDS} deck The deck of cards
+   */
+  drawInitialCards(deck) {
+    let symbols = Object.keys(deck);
+    let first = symbols[ Math.floor( Math.random() * symbols.length ) ];
+    let second = symbols[ Math.floor( Math.random() * symbols.length ) ];
+
+    this.value += deck[first] + deck[second]
+
+    this.cards.push(first);
+    this.cards.push(second);
+  }
+
+  draw() {
+    
+  }
+}
+
+class JigsawPiece {
+  constructor() {
+    
+  }
+}
+
+const CARDS = {
+  "A"  : [1, 11],
+  "2"  : 2,
+  "3"  : 3,
+  "4"  : 4,
+  "5"  : 5,
+  "6"  : 6,
+  "7"  : 7,
+  "8"  : 8,
+  "9"  : 9,
+  "10" : 10,
+  "J"  : 10,
+  "Q"  : 10,
+  "K"  : 10,
+};
+
+
+const hp = new HalfPiece(0, 0, 0, false);
+hp.drawInitialCards(CARDS);
+
+
 /*
  * This file should contain code that draws your faces.
  *
