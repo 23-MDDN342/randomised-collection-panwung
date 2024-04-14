@@ -1,68 +1,119 @@
-HalfPiece = class {
+class Card {
+  constructor(symbol, suit, value) {
+    this.symbol = symbol;
+    this.suit = suit;
+    this.value = value;
+  }
+}
+
+class HalfPiece {
   /**
    * Creates a triangle which is half of the jigsaw piece
    * @param {number} x x coord of corner of triangle
    * @param {number} y y coord of corner of triangle
    * @param {number} edgeLength Edge length of triangle
+   * @param {number} notchDisplacement Notch displacement from edge
+   * @param {number} notchEdge Size of the notch
    * @param {boolean} isPlayer Determines whether the half piece is a player or dealer
    */
-  constructor(x, y, edgeLength, isPlayer) {
+  constructor(x, y, edgeLength, notchDisplacement, notchEdge, isPlayer) {
     this.accessories = [];
     this.cards = [];
     this.value = 0;
 
     this.x = x;
     this.y = y;
-    this.edgeLength = edgeLength;
+
+    this.points = this._generatePoints(edgeLength, notchDisplacement, notchEdge);
     
     this.playerType = (isPlayer) ? "player" : "dealer";
   }
 
   /**
    * Draws two cards
-   * @param {CARDS} deck The deck of cards
+   * @param {Array<Card>} deck The deck of cards
    */
-  drawInitialCards(deck) {
-    let symbols = Object.keys(deck);
-    let first = symbols[ Math.floor( Math.random() * symbols.length ) ];
-    let second = symbols[ Math.floor( Math.random() * symbols.length ) ];
+  pullInitialCards(deck) {
+    let first = this.pullRandomCard(deck);
+    let second = this.pullRandomCard(deck);
 
-    this.value += deck[first] + deck[second]
+    // If adding the value of the second card to the total makes the 
+    // total exceed 21, it must mean there are two aces in this hand
+    this.value += first.value;
+    this.value += (this.value + second.value > 21) ? 1 : second.value;
 
     this.cards.push(first);
     this.cards.push(second);
   }
 
-  draw() {
-    
+  pullRandomCard(deck) {
+    return deck[ Math.floor( Math.random() * deck.length ) ];
   }
+
+  draw() {
+    if (this.playerType === "player") {
+      push();
+      
+      // Colours
+      stroke(0);
+      noFill();
+      
+      // Drawing
+      translate(this.x, this.y);
+
+      beginShape();
+      for (let p of this.points) {
+        vertex(p[0], p[1]);
+      }
+      endShape();
+
+      pop();
+    }
+    else {
+      push();
+      pop();
+    }
+  }
+
+  _generatePoints(edgeLength, notchDisplacement, notchEdge) {
+    let points = [
+      [0, 0],
+      [0, edgeLength/2 - notchEdge],
+      [- notchDisplacement, edgeLength/2],
+      [0, edgeLength/2 + notchEdge],
+      [0, edgeLength],
+      [edgeLength, edgeLength]
+    ];
+    return points;
+  }
+
 }
 
 class JigsawPiece {
+  // needs to know tile position
   constructor() {
     
   }
 }
 
-const CARDS = {
-  "A"  : [1, 11],
-  "2"  : 2,
-  "3"  : 3,
-  "4"  : 4,
-  "5"  : 5,
-  "6"  : 6,
-  "7"  : 7,
-  "8"  : 8,
-  "9"  : 9,
-  "10" : 10,
-  "J"  : 10,
-  "Q"  : 10,
-  "K"  : 10,
-};
+const CARDS = [
+  new Card("A", "spade", 11),
+  new Card("2", "spade", 2),
+  new Card("3", "spade", 3),
+  new Card("4", "spade", 4),
+  new Card("5", "spade", 5),
+  new Card("6", "spade", 6),
+  new Card("7", "spade", 7),
+  new Card("8", "spade", 8),
+  new Card("9", "spade", 9),
+  new Card("10","spade",  10),
+  new Card("J", "spade", 10),
+  new Card("Q", "spade", 10),
+  new Card("K", "spade", 10),
+];
 
 
-const hp = new HalfPiece(0, 0, 0, false);
-hp.drawInitialCards(CARDS);
+
 
 
 /*

@@ -6,3 +6,6 @@
 >This starter code is just some simple faces being drawn. 
 
 
+14/04 
+Began work on drawing each half piece.
+The original plan was to have rounded notches, but it became far too complex for my brain to be bothered handling, so instead triangles will be used as the shape of the notfch
