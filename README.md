@@ -8,4 +8,7 @@
 
 14/04 
 Began work on drawing each half piece.
-The original plan was to have rounded notches, but it became far too complex for my brain to be bothered handling, so instead triangles will be used as the shape of the notfch
+The original plan was to have rounded notches, but it became far too complex for my brain to be bothered handling, so instead triangles will be used as the shape of the notch
+
+15/04
+Made the board and some comparison logic that determines which way the notches of each piece should be facing

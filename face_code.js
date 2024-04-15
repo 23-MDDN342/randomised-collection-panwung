@@ -1,116 +1,171 @@
-class Card {
-  constructor(symbol, suit, value) {
-    this.symbol = symbol;
-    this.suit = suit;
-    this.value = value;
+class JigsawPiece {
+  /**
+   * Creates and stroes two HalfPiece objects.
+   * @param {number} x x coord of corner of triangle.
+   * @param {number} y y coord of corner of triangle.
+   * @param {Array<number>} gridPos Position on board.
+   * @param {number} edgeLength Edge length of triangle.
+   * @param {number} notchDisplacement Notch displacement from edge.
+   * @param {number} notchEdge Size of the notch.
+   */
+  constructor(x, y, gridPos, edgeLength, notchDisplacement, notchEdge) {
+    this.x = x;
+    this.y = y;
+    this.gridPos = gridPos;
+
+    this.edgeLength = edgeLength;
+    this.notchDisplacement = notchDisplacement;
+    this.notchEdge = notchEdge;
+
+    this.player = new HalfPiece(x, y, edgeLength, notchDisplacement, notchEdge, true);
+    this.dealer = new HalfPiece(x, y, edgeLength, notchDisplacement, notchEdge, false);
   }
+
+  pullRandom(deck) {
+    return deck[ Math.floor( Math.random() * deck.length ) ];
+  }
+
+  compareTo(otherPiece, dir) {
+    let halfLength = this.edgeLength / 2;
+    switch (dir) {
+      case "L":
+        if (otherPiece === undefined) { this.player.points.push([0, this.edgeLength]); }
+        else {
+          let beatOtherDealer = this.player.hand[0].value > otherPiece.dealer.hand[0].value;
+          this.player.points.push([0, halfLength - this.notchEdge]);
+          this.player.points.push([(beatOtherDealer) ? - this.notchDisplacement : this.notchDisplacement, halfLength]);
+          this.player.points.push([0, halfLength + this.notchEdge]);
+          this.player.points.push([0, this.edgeLength]);
+        }
+        break;
+
+      case "D":
+        if (otherPiece === undefined) { this.player.points.push([this.edgeLength, this.edgeLength]); }
+        else {
+          let beatOtherDealer = this.player.hand[0].value > otherPiece.dealer.hand[0].value;
+          this.player.points.push([halfLength - this.notchEdge, this.edgeLength]);
+          this.player.points.push([halfLength, this.edgeLength + ((beatOtherDealer) ? this.notchDisplacement : - this.notchDisplacement)]); //]
+          this.player.points.push([halfLength + this.notchEdge, this.edgeLength]);
+          this.player.points.push([this.edgeLength, this.edgeLength]);
+        }
+        break;
+
+      case "R":
+        if (otherPiece === undefined) { this.dealer.points.push([this.edgeLength, 0]); }
+        else {
+          let beatOtherPlayer = this.dealer.hand[0].value >= otherPiece.player.hand[0].value;
+          this.dealer.points.push([this.edgeLength, halfLength + this.notchEdge]);
+          this.dealer.points.push([(beatOtherPlayer) ? this.edgeLength + this.notchDisplacement : this.edgeLength - this.notchDisplacement, halfLength]);
+          this.dealer.points.push([this.edgeLength, halfLength - this.notchEdge]);
+          this.dealer.points.push([this.edgeLength, 0]);
+        }
+        break;
+
+      case "U":
+        if (otherPiece === undefined) { this.dealer.points.push([0, 0]); }
+        else {
+          let beatOtherPlayer = this.dealer.hand[0].value >= otherPiece.player.hand[0].value;
+          this.dealer.points.push([halfLength + this.notchEdge, 0]);
+          this.dealer.points.push([halfLength, (beatOtherPlayer) ? - this.notchDisplacement : this.notchDisplacement]);
+          this.dealer.points.push([halfLength - this.notchEdge, 0]);
+          this.dealer.points.push([0, 0]);
+        }
+        break;
+    }
+  }
+
+  pullInitialCards(deck) {
+    this.player.addCardToHand(this.pullRandom(deck));
+    this.player.addCardToHand(this.pullRandom(deck));
+    this.dealer.addCardToHand(this.pullRandom(deck));
+    this.dealer.addCardToHand(this.pullRandom(deck));
+  }
+
+  draw(winCol, loseCol) {
+    push();
+    translate(this.x, this.y);
+    this.player.draw();
+    pop();
+
+    push();
+    translate(this.x, this.y);
+    this.dealer.draw();
+    pop();
+  }
+
+
 }
+
+
 
 class HalfPiece {
   /**
-   * Creates a triangle which is half of the jigsaw piece
-   * @param {number} x x coord of corner of triangle
-   * @param {number} y y coord of corner of triangle
-   * @param {number} edgeLength Edge length of triangle
-   * @param {number} notchDisplacement Notch displacement from edge
-   * @param {number} notchEdge Size of the notch
-   * @param {boolean} isPlayer Determines whether the half piece is a player or dealer
+   * Creates a triangle which is half of the jigsaw piece.
+   * @param {number} x x coord of corner of triangle.
+   * @param {number} y y coord of corner of triangle.
+   * @param {number} edgeLength Edge length of triangle.
+   * @param {number} notchDisplacement Notch displacement from edge.
+   * @param {number} notchEdge Size of the notch.
+   * @param {boolean} isPlayer Determines whether the half piece is a player or dealer.
    */
   constructor(x, y, edgeLength, notchDisplacement, notchEdge, isPlayer) {
-    this.accessories = [];
-    this.cards = [];
-    this.value = 0;
+    // this.accessories = []; // for later
+    this.hand = [];
+    this.totalValue = 0;
 
     this.x = x;
     this.y = y;
 
-    this.points = this._generatePoints(edgeLength, notchDisplacement, notchEdge);
-    
     this.playerType = (isPlayer) ? "player" : "dealer";
+    this.points = [ (isPlayer) ? [0, 0] : [edgeLength, edgeLength] ]; //this.generatePoints(edgeLength, notchDisplacement, notchEdge); // This needs to be done later after cards have been pulled and compared to one another.
   }
 
-  /**
-   * Draws two cards
-   * @param {Array<Card>} deck The deck of cards
-   */
-  pullInitialCards(deck) {
-    let first = this.pullRandomCard(deck);
-    let second = this.pullRandomCard(deck);
-
-    // If adding the value of the second card to the total makes the 
-    // total exceed 21, it must mean there are two aces in this hand
-    this.value += first.value;
-    this.value += (this.value + second.value > 21) ? 1 : second.value;
-
-    this.cards.push(first);
-    this.cards.push(second);
+  addCardToHand(card) {
+    this.hand.push(card);
+    this.totalValue += (card.symbol === "A" && this.totalValue + card.value > 21) ? 1 : card.value;
   }
 
-  pullRandomCard(deck) {
-    return deck[ Math.floor( Math.random() * deck.length ) ];
-  }
+  // generatePoints(edgeLength, notchDisplacement, notchEdge) {
+  //   let halfLength = edgeLength / 2;
+  //   let points;
+  //   if (this.playerType === "player") {
+  //     points = [
+  //       [0, 0],                               // Corner
+  
+  //       [0, halfLength - notchEdge],        // Notch Start
+  //       [- notchDisplacement, halfLength],  // Notch Displace
+  //       [0, halfLength + notchEdge],        // Notch End
+  
+  //       [0, edgeLength],                      // Corner
+
+  //       [halfLength - notchEdge, edgeLength],         // Notch Start
+  //       [halfLength, edgeLength + notchDisplacement], // Notch Displace
+  //       [halfLength + notchEdge, edgeLength],         // Notch End
+
+  //       [edgeLength, edgeLength],             // Corner
+  //       [0, 0]
+  //     ];
+  //   }
+
+  //   return points;
+  // }
 
   draw() {
-    if (this.playerType === "player") {
-      push();
-      
-      // Colours
-      stroke(0);
-      noFill();
-      
-      // Drawing
-      translate(this.x, this.y);
-
-      beginShape();
-      for (let p of this.points) {
-        vertex(p[0], p[1]);
-      }
-      endShape();
-
-      pop();
-    }
-    else {
-      push();
-      pop();
-    }
-  }
-
-  _generatePoints(edgeLength, notchDisplacement, notchEdge) {
-    let points = [
-      [0, 0],
-      [0, edgeLength/2 - notchEdge],
-      [- notchDisplacement, edgeLength/2],
-      [0, edgeLength/2 + notchEdge],
-      [0, edgeLength],
-      [edgeLength, edgeLength]
-    ];
-    return points;
-  }
-
-}
-
-class JigsawPiece {
-  // needs to know tile position
-  constructor() {
+    push();
     
+    // Colours
+    stroke(0);
+    noFill();
+    
+    // Drawing
+    beginShape();
+    for (let p of this.points) { vertex(p[0], p[1]); }
+    endShape(CLOSE);
+
+    pop();
   }
 }
 
-const CARDS = [
-  new Card("A", "spade", 11),
-  new Card("2", "spade", 2),
-  new Card("3", "spade", 3),
-  new Card("4", "spade", 4),
-  new Card("5", "spade", 5),
-  new Card("6", "spade", 6),
-  new Card("7", "spade", 7),
-  new Card("8", "spade", 8),
-  new Card("9", "spade", 9),
-  new Card("10","spade",  10),
-  new Card("J", "spade", 10),
-  new Card("Q", "spade", 10),
-  new Card("K", "spade", 10),
-];
 
 
 

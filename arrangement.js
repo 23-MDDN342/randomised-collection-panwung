@@ -1,3 +1,120 @@
+/**
+ * Class defining the board arrangement of the jigsaw pieces.
+ */
+class Board {
+  /**
+   * Inner card class.
+   */
+  Card = class {
+    /**
+     * Constructor.
+     * @param {string} suit The suit of the card.
+     * @param {string} symbol The symbol of the card.
+     * @param {number} value The value of the card.
+     */
+    constructor(suit, symbol, value) {
+      this.suit = suit;
+      this.symbol = symbol;
+      this.value = value;
+    }
+  }
+
+  /**
+   * Constructor.
+   * @param {number} x x coord of board.
+   * @param {number} y y coord of board.
+   * @param {number} rows Number of rows on this board.
+   * @param {number} columns Number of columns on this board.
+   * @param {number} edgeLength Edge length of triangle.
+   * @param {number} notchDisplacement Notch displacement from edge.
+   * @param {number} notchEdge Size of the notch.
+   * @param {number|Array<number>} winColor Colour of the winner.
+   * @param {number|Array<number>} loseColor  Colour of the loser.
+   * @param {number} dealerStop Number that the dealer stops pulling cards at.
+   */
+  constructor(x, y, rows, columns, edgeLength, notchDisplacement, notchEdge, winColor, loseColor, dealerStop=17) {
+    // Generates a full deck of cards, sans the jokers.
+    // Admittedly this is overkill given that the faces will 
+    // only play once to determine its features, but oh well.
+    let suits = ["spade", "heart", "club", "diamond"];
+    let symbols = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+    let values = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10];
+    this.deck = [];
+
+    for (let suit of suits) for (let i=0; i<symbols.length; i++) {
+      this.deck.push(new this.Card(suit, symbols[i], values[i]));
+    }
+
+    this.winColor = winColor;
+    this.loseColor = loseColor;
+
+    this.dealerStop = dealerStop;
+
+    // Create new JigsawPiece objects.
+    this.jigsawPieces = [];
+    let currentRow;
+    for (let c=0; c<columns; c++) {
+      currentRow = [];
+      for (let r=0; r<rows; r++) {
+        let jp = new JigsawPiece(
+          x + r * edgeLength, 
+          y + c * edgeLength, 
+          [r, c],
+          edgeLength,
+          notchDisplacement,
+          notchEdge
+        );
+        jp.pullInitialCards(this.deck);
+        currentRow.push(jp);
+      }
+      this.jigsawPieces.push(currentRow);
+    }
+
+    // later
+    // this.bjColor
+    // this.bustCol
+  }
+
+  generateNotches() {
+    for (let c=0; c<this.jigsawPieces.length; c++) {
+      for (let r=0; r<this.jigsawPieces[0].length; r++) {
+        let jp = this.jigsawPieces[c][r];
+
+        // Player
+        if (r - 1 < 0) { jp.compareTo(undefined, "L"); }
+        else { jp.compareTo(this.jigsawPieces[c][r - 1], "L"); }
+
+        if (c + 1 > this.jigsawPieces.length - 1) { jp.compareTo(undefined, "D"); }
+        else { jp.compareTo(this.jigsawPieces[c + 1][r], "D"); }
+
+        // Dealer
+        if (r + 1 > this.jigsawPieces[0].length - 1) { jp.compareTo(undefined, "R"); }
+        else { jp.compareTo(this.jigsawPieces[c][r + 1], "R"); }
+
+        if (c - 1 < 0) { jp.compareTo(undefined, "U"); }
+        else { jp.compareTo(this.jigsawPieces[c - 1][r], "U"); }
+        
+      }
+    }
+  }
+
+  draw() {
+    for (let c=0; c<this.jigsawPieces.length; c++) {
+      for (let r=0; r<this.jigsawPieces[0].length; r++) {
+        let jp = this.jigsawPieces[c][r];
+        jp.draw(this.winColor, this.loseColor);
+      }
+    }
+  }
+}
+
+
+const board = new Board(0, 0, 3, 3  , 100, 20, 20, [255, 255, 255], [0, 0, 0]);
+board.generateNotches();
+const hp = new HalfPiece(150, 150, 200, 20, 20, true);
+
+
+
 /*
  * This program draws your arrangement of faces on the canvas.
  */
@@ -27,19 +144,12 @@ function changeRandomSeed() {
   lastSwapTime = millis();
 }
 
-
-
 function mouseClicked() {
   changeRandomSeed();
 }
 
-
-const hp = new HalfPiece(150, 150, 200, 20, 20, true);
-hp.pullInitialCards(CARDS);
-
-
 function draw() {
-  hp.draw();
+  board.draw();
 }
 
 // LEGACY
