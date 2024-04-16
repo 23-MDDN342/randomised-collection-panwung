@@ -28,12 +28,11 @@ class Board {
    * @param {number} edgeLength Edge length of triangle.
    * @param {number} notchDisplacement Notch displacement from edge.
    * @param {number} notchEdge Size of the notch.
-   * @param {boolean} scatter Boolean controlling whether pieces will be scattered.
    * @param {number|Array<number>} winColor Colour of the winner.
    * @param {number|Array<number>} loseColor  Colour of the loser.
    * @param {number} dealerStop Number that the dealer stops pulling cards at.
    */
-  constructor(x, y, rows, columns, edgeLength, notchDisplacement, notchEdge, scatter, winColor, loseColor, dealerStop=17) {
+  constructor(x, y, rows, columns, edgeLength, notchDisplacement, notchEdge, winColor, loseColor, dealerStop=17) {
     // Generates a full deck of cards, sans the jokers.
     // Admittedly this is overkill given that the faces will 
     // only play once to determine its features, but oh well.
@@ -46,10 +45,8 @@ class Board {
       this.deck.push(new this.Card(suit, symbols[i], values[i]));
     }
 
-    this.scatter = scatter;
-
-    this.winColor = winColor;
-    this.loseColor = loseColor;
+    this.winColor = winColor; // FOR LATER
+    this.loseColor = loseColor; // FOR LATER
 
     this.dealerStop = dealerStop;
 
@@ -66,7 +63,6 @@ class Board {
           edgeLength,
           notchDisplacement,
           notchEdge,
-          scatter
         );
         jp.pullInitialCards(this.deck);
         currentRow.push(jp);
@@ -102,13 +98,71 @@ class Board {
     }
   }
 
-  draw() {
+  draw(rotationTransform, xScale, yScale) {
+    push();
+    angleMode(RADIANS);
+    ellipseMode(CENTER);
+
+    
+    let firstPiece = this.jigsawPieces[0][0];
+    let firstCenter = [firstPiece.x + firstPiece.edgeLength/2, firstPiece.y + firstPiece.edgeLength/2];
+    let firstTopRightCorner = this._rotatePoint([firstPiece.x + firstPiece.edgeLength, firstPiece.y], firstCenter, rotationTransform * Math.PI/180);
+    let firstBottomLeftCorner = this._rotatePoint([firstPiece.x, firstPiece.y + firstPiece.edgeLength], firstCenter, rotationTransform * Math.PI/180);
+
+    // needs to "apply" transforms to get the final point position
+    
+    let secondRowPiece;
+    let secondColPiece;
+    let secondRowTopLeftCorner = [0, 0];
+    let secondColTopLeftCorner = [0, 0];
+    
+    if (this.jigsawPieces[0][1] !== undefined) { 
+      secondRowPiece = this.jigsawPieces[0][1]; 
+      let secondCenter = [secondRowPiece.x + secondRowPiece.edgeLength/2, secondRowPiece.y + secondRowPiece.edgeLength/2];
+      secondRowTopLeftCorner = this._rotatePoint([secondRowPiece.x, secondRowPiece.y], secondCenter, rotationTransform * Math.PI/180);
+    }
+    if (this.jigsawPieces[1] !== undefined) { 
+      secondColPiece = this.jigsawPieces[1][0]; 
+      let secondCenter = [secondColPiece.x + secondColPiece.edgeLength/2, secondColPiece.y + secondColPiece.edgeLength/2];
+      secondColTopLeftCorner = this._rotatePoint([secondColPiece.x, secondColPiece.y], secondCenter, rotationTransform * Math.PI/180);
+    }
+
+    let translationXY = [
+      Math.abs(firstTopRightCorner[0] - secondRowTopLeftCorner[0]),
+      Math.abs(firstTopRightCorner[1] - secondRowTopLeftCorner[1]),
+
+      Math.abs(firstBottomLeftCorner[0] - secondColTopLeftCorner[0]),
+      Math.abs(firstBottomLeftCorner[1] - secondColTopLeftCorner[1]),
+    ];
+    
+
+
     for (let c=0; c<this.jigsawPieces.length; c++) {
       for (let r=0; r<this.jigsawPieces[0].length; r++) {
+
         let jp = this.jigsawPieces[c][r];
-        jp.draw(this.winColor, this.loseColor);
+        if (c=== 0 && r === 0) {
+          jp.draw(0, 0, rotationTransform, xScale, yScale);
+        }
+        else {
+          //  -c * translationXY[2], -translationXY[3]
+          // jp.draw(0, 0, rotationTransform, xScale, yScale);
+          jp.draw(r * -translationXY[0] - c * translationXY[2], r * translationXY[1] - c * translationXY[3], rotationTransform, xScale, yScale);
+        }
+        
+        // jp.draw(-r * jp.edgeLength * Math.cos(45 * Math.PI/180), r * jp.edgeLength * Math.sin(45 * Math.PI/180), rotationTransform, xScale, yScale);
+        
+
       }
     }
+    pop();
+  }
+
+  _rotatePoint(point, centre, angle) {
+    let newPointX = (point[0] - centre[0]) * Math.cos(angle) - (point[1] - centre[1]) * Math.sin(angle) + centre[0];
+    let newPointY = (point[0] - centre[0]) * Math.sin(angle) + (point[1] - centre[1]) * Math.cos(angle) + centre[1];
+
+    return [newPointX, newPointY];
   }
 }
 
@@ -123,10 +177,11 @@ let curRandomSeed = 0;
 let lastSwapTime = 0;
 const millisPerSwap = 3000;
 
-const ROWS = 3;
-const COLS = 5;
-
-const board = new Board(canvasWidth/2 - 200, canvasHeight/3 - 150, ROWS, COLS, 90, 8, 5, true, [255, 255, 255], [0, 0, 0]);
+const ROWS = 2;
+const COLS = 2;
+const EDGE_LENGTH = 90;
+const ROT = 45;
+const board = new Board(canvasWidth/2 - 200, canvasHeight/3 - 100, ROWS, COLS, EDGE_LENGTH, 8, 5, [255, 255, 255], [0, 0, 0]);
 board.generateNotches();
 
 // global variables for colors
@@ -153,13 +208,13 @@ function mouseClicked() {
 }
 
 function draw() {
-  drawTable(canvasWidth, canvasHeight);
-
-  board.draw();
+  // drawTable(canvasWidth, canvasHeight);
+  board.draw(ROT, 0, 0); /* ------------------------------------------------------------------------------------------------------------------------- */
 }
 
 function drawTable(width, height) {
   push();
+  
   strokeWeight(3);
   stroke(0);
   fill([50, 30, 15]);
@@ -176,6 +231,7 @@ function drawTable(width, height) {
   pop();
 
   push();
+  
   noStroke();
   fill([164, 116, 36]);
   rect(0, 0, width * 2/3, height);

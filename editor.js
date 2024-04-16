@@ -10,6 +10,14 @@ let slider6, slider7, slider8, slider9, slider10;
 let faceSelector;
 let faceGuideCheckbox;
 
+const jigsawPiece = new JigsawPiece(-9, -9, [0, 0], 18, 10, 5);
+// const jigsawPieceDummy = new JigsawPiece(-9, -9, [1, 0], 18, 10, 5);
+
+jigsawPiece.compareTo(undefined, "L");
+jigsawPiece.compareTo(undefined, "R");
+jigsawPiece.compareTo(undefined, "D");
+jigsawPiece.compareTo(undefined, "U");
+
 function setup () {
 
   // create the drawing canvas, save the canvas element
@@ -17,9 +25,10 @@ function setup () {
   main_canvas.parent('canvasContainer');
 
   // create sliders
-  slider1 = createSlider(0, 100, 50);
-  slider2 = createSlider(0, 100, 50);
-  slider3 = createSlider(0, 100, 50);
+  slider1 = createSlider(-180, 180, 0); // Rotation
+  slider2 = createSlider(0, 100, 0);   // x Scale 
+  slider3 = createSlider(0, 100, 0);   // y Scale
+
   slider4 = createSlider(0, 100, 50);
   slider5 = createSlider(0, 100, 50);
   slider6 = createSlider(0, 100, 50);
@@ -84,16 +93,12 @@ function draw () {
 
   push();
   if (mode == '1') {
-   // draw face using values mapped from 3 sliders
-   let tilt_value = map(s1, 0, 100, -90, 90);
-   let mouth_value = map(s2, 0, 100, 0.5, 10);
-   let eye_value = int(map(s3, 0, 100, 1, 3));
-   orangeAlienFace(tilt_value, eye_value, mouth_value);
+    jigsawPiece.draw(0, 0, s1, s2, s3);
   }
 
   if (mode == '2') {
      // let slider value 1 indicate thinness
-     blockyFace(s1);
+     blockyFace(s1, s2, s3);
   }
   if (mode == '3') {
     simplePurpleFace();

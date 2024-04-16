@@ -7,9 +7,8 @@ class JigsawPiece {
    * @param {number} edgeLength Edge length of triangle.
    * @param {number} notchDisplacement Notch displacement from edge.
    * @param {number} notchEdge Size of the notch.
-   * @param {boolean} scatter Boolean determining whether the piece will be scattered.
    */
-  constructor(x, y, gridPos, edgeLength, notchDisplacement, notchEdge, scatter=false) {
+  constructor(x, y, gridPos, edgeLength, notchDisplacement, notchEdge) {
     this.x = x;
     this.y = y;
     this.gridPos = gridPos;
@@ -20,9 +19,6 @@ class JigsawPiece {
 
     this.player = new HalfPiece(x, y, edgeLength, true);
     this.dealer = new HalfPiece(x, y, edgeLength, false);
-
-    this.randomRotation = Math.random() * Math.PI * 2;
-    this.scatter = scatter;
   }
 
   pullRandom(deck) {
@@ -89,13 +85,13 @@ class JigsawPiece {
     this.dealer.addCardToHand(this.pullRandom(deck));
   }
 
-  draw(winCol, loseCol) {
+  draw(xtranslate, ytranslate, rotationTransform, xScale, yScale) {
     push();
-    translate(this.x, this.y);
+    translate(this.x + xtranslate, this.y + ytranslate);
     angleMode(RADIANS);
 
-    this.player.draw((this.scatter) ? this.randomRotation : 0);
-    this.dealer.draw((this.scatter) ? this.randomRotation : 0);
+    this.player.draw(rotationTransform, xScale, yScale);
+    this.dealer.draw(rotationTransform, xScale, yScale);
     pop();
   }
 }
@@ -128,20 +124,21 @@ class HalfPiece {
     this.totalValue += (card.symbol === "A" && this.totalValue + card.value > 21) ? 1 : card.value;
   }
 
-  draw(randomRotation) {
+  draw(rotationTransform, xScale, yScale) {
+    rotationTransform *=  Math.PI/180;
     push();
 
-    strokeWeight(2);
+    strokeWeight(this.edgeLength/20);
     strokeJoin(ROUND)
     fill([80, 80, 80, 127]);
     noStroke();
 
     // Shadow
-    beginShape();
-    for (let p of this.points) { 
-      vertex(this._rotatePoint(p, randomRotation)[0] + 13, this._rotatePoint(p, randomRotation)[1] + 7); 
-    }
-    endShape(CLOSE);
+    // beginShape();
+    // for (let p of this.points) { 
+      // vertex(this._rotatePoint(p, randomRotation)[0] + 13, this._rotatePoint(p, randomRotation)[1] + 7); 
+    // }
+    // endShape(CLOSE);
 
     // Colours
     stroke([20, 200, 120]);
@@ -149,8 +146,20 @@ class HalfPiece {
     
     // Drawing
     beginShape();
-    for (let p of this.points) { 
-      vertex(this._rotatePoint(p, randomRotation)[0], this._rotatePoint(p, randomRotation)[1]); 
+    let xPoint;
+    let yPoint;
+    for (let p of this.points) {
+
+      // Apply rotation
+      xPoint = this._rotatePoint(p, rotationTransform)[0];
+      yPoint = this._rotatePoint(p, rotationTransform)[1];
+
+      // Apply x scaling
+      xPoint = map(xScale, 0, 100, xPoint, this.edgeLength/2);
+      yPoint = map(yScale, 0, 100, yPoint, this.edgeLength/2);
+
+      
+      vertex(xPoint, yPoint); 
     }
     endShape(CLOSE);
 
