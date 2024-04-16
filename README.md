@@ -12,3 +12,6 @@ The original plan was to have rounded notches, but it became far too complex for
 
 15/04
 Made the board and some comparison logic that determines which way the notches of each piece should be facing
+
+16/04
+Added some background details to make it look less bland. Also added scattering so the pieces can have a random location and rotation, making it look a little more interesting. Currently there is only random rotation. It is broken currently, however, as I also added a shadow which is currently rendering over itself. I will likely need to split the drawing method into multiple passes (shadow and layer in case they overlap).

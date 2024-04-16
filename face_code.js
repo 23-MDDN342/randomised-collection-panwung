@@ -7,8 +7,9 @@ class JigsawPiece {
    * @param {number} edgeLength Edge length of triangle.
    * @param {number} notchDisplacement Notch displacement from edge.
    * @param {number} notchEdge Size of the notch.
+   * @param {boolean} scatter Boolean determining whether the piece will be scattered.
    */
-  constructor(x, y, gridPos, edgeLength, notchDisplacement, notchEdge) {
+  constructor(x, y, gridPos, edgeLength, notchDisplacement, notchEdge, scatter=false) {
     this.x = x;
     this.y = y;
     this.gridPos = gridPos;
@@ -17,14 +18,21 @@ class JigsawPiece {
     this.notchDisplacement = notchDisplacement;
     this.notchEdge = notchEdge;
 
-    this.player = new HalfPiece(x, y, edgeLength, notchDisplacement, notchEdge, true);
-    this.dealer = new HalfPiece(x, y, edgeLength, notchDisplacement, notchEdge, false);
+    this.player = new HalfPiece(x, y, edgeLength, true);
+    this.dealer = new HalfPiece(x, y, edgeLength, false);
+
+    this.randomRotation = Math.random() * Math.PI * 2;
+    this.scatter = scatter;
   }
 
   pullRandom(deck) {
     return deck[ Math.floor( Math.random() * deck.length ) ];
   }
 
+  playerVsDealer() {
+
+  }
+ 
   compareTo(otherPiece, dir) {
     let halfLength = this.edgeLength / 2;
     switch (dir) {
@@ -84,19 +92,13 @@ class JigsawPiece {
   draw(winCol, loseCol) {
     push();
     translate(this.x, this.y);
-    this.player.draw();
-    pop();
+    angleMode(RADIANS);
 
-    push();
-    translate(this.x, this.y);
-    this.dealer.draw();
+    this.player.draw((this.scatter) ? this.randomRotation : 0);
+    this.dealer.draw((this.scatter) ? this.randomRotation : 0);
     pop();
   }
-
-
 }
-
-
 
 class HalfPiece {
   /**
@@ -108,13 +110,14 @@ class HalfPiece {
    * @param {number} notchEdge Size of the notch.
    * @param {boolean} isPlayer Determines whether the half piece is a player or dealer.
    */
-  constructor(x, y, edgeLength, notchDisplacement, notchEdge, isPlayer) {
+  constructor(x, y, edgeLength, isPlayer) {
     // this.accessories = []; // for later
     this.hand = [];
     this.totalValue = 0;
 
     this.x = x;
     this.y = y;
+    this.edgeLength = edgeLength;
 
     this.playerType = (isPlayer) ? "player" : "dealer";
     this.points = [ (isPlayer) ? [0, 0] : [edgeLength, edgeLength] ]; //this.generatePoints(edgeLength, notchDisplacement, notchEdge); // This needs to be done later after cards have been pulled and compared to one another.
@@ -125,44 +128,40 @@ class HalfPiece {
     this.totalValue += (card.symbol === "A" && this.totalValue + card.value > 21) ? 1 : card.value;
   }
 
-  // generatePoints(edgeLength, notchDisplacement, notchEdge) {
-  //   let halfLength = edgeLength / 2;
-  //   let points;
-  //   if (this.playerType === "player") {
-  //     points = [
-  //       [0, 0],                               // Corner
-  
-  //       [0, halfLength - notchEdge],        // Notch Start
-  //       [- notchDisplacement, halfLength],  // Notch Displace
-  //       [0, halfLength + notchEdge],        // Notch End
-  
-  //       [0, edgeLength],                      // Corner
-
-  //       [halfLength - notchEdge, edgeLength],         // Notch Start
-  //       [halfLength, edgeLength + notchDisplacement], // Notch Displace
-  //       [halfLength + notchEdge, edgeLength],         // Notch End
-
-  //       [edgeLength, edgeLength],             // Corner
-  //       [0, 0]
-  //     ];
-  //   }
-
-  //   return points;
-  // }
-
-  draw() {
+  draw(randomRotation) {
     push();
-    
+
+    strokeWeight(2);
+    strokeJoin(ROUND)
+    fill([80, 80, 80, 127]);
+    noStroke();
+
+    // Shadow
+    beginShape();
+    for (let p of this.points) { 
+      vertex(this._rotatePoint(p, randomRotation)[0] + 13, this._rotatePoint(p, randomRotation)[1] + 7); 
+    }
+    endShape(CLOSE);
+
     // Colours
-    stroke(0);
-    noFill();
+    stroke([20, 200, 120]);
+    fill([180, 90, 120]);
     
     // Drawing
     beginShape();
-    for (let p of this.points) { vertex(p[0], p[1]); }
+    for (let p of this.points) { 
+      vertex(this._rotatePoint(p, randomRotation)[0], this._rotatePoint(p, randomRotation)[1]); 
+    }
     endShape(CLOSE);
 
     pop();
+  }
+
+  _rotatePoint(point, angle) {
+    let newPointX = (point[0] - this.edgeLength / 2) * Math.cos(angle) - (point[1] - this.edgeLength / 2) * Math.sin(angle) + this.edgeLength / 2;
+    let newPointY = (point[0] - this.edgeLength / 2) * Math.sin(angle) + (point[1] - this.edgeLength / 2) * Math.cos(angle) + this.edgeLength / 2;
+
+    return [newPointX, newPointY];
   }
 }
 

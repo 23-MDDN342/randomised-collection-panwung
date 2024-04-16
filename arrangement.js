@@ -28,11 +28,12 @@ class Board {
    * @param {number} edgeLength Edge length of triangle.
    * @param {number} notchDisplacement Notch displacement from edge.
    * @param {number} notchEdge Size of the notch.
+   * @param {boolean} scatter Boolean controlling whether pieces will be scattered.
    * @param {number|Array<number>} winColor Colour of the winner.
    * @param {number|Array<number>} loseColor  Colour of the loser.
    * @param {number} dealerStop Number that the dealer stops pulling cards at.
    */
-  constructor(x, y, rows, columns, edgeLength, notchDisplacement, notchEdge, winColor, loseColor, dealerStop=17) {
+  constructor(x, y, rows, columns, edgeLength, notchDisplacement, notchEdge, scatter, winColor, loseColor, dealerStop=17) {
     // Generates a full deck of cards, sans the jokers.
     // Admittedly this is overkill given that the faces will 
     // only play once to determine its features, but oh well.
@@ -44,6 +45,8 @@ class Board {
     for (let suit of suits) for (let i=0; i<symbols.length; i++) {
       this.deck.push(new this.Card(suit, symbols[i], values[i]));
     }
+
+    this.scatter = scatter;
 
     this.winColor = winColor;
     this.loseColor = loseColor;
@@ -62,7 +65,8 @@ class Board {
           [r, c],
           edgeLength,
           notchDisplacement,
-          notchEdge
+          notchEdge,
+          scatter
         );
         jp.pullInitialCards(this.deck);
         currentRow.push(jp);
@@ -109,12 +113,6 @@ class Board {
 }
 
 
-const board = new Board(0, 0, 3, 3  , 100, 20, 20, [255, 255, 255], [0, 0, 0]);
-board.generateNotches();
-const hp = new HalfPiece(150, 150, 200, 20, 20, true);
-
-
-
 /*
  * This program draws your arrangement of faces on the canvas.
  */
@@ -124,6 +122,12 @@ let curRandomSeed = 0;
 
 let lastSwapTime = 0;
 const millisPerSwap = 3000;
+
+const ROWS = 3;
+const COLS = 5;
+
+const board = new Board(canvasWidth/2 - 200, canvasHeight/3 - 150, ROWS, COLS, 90, 8, 5, true, [255, 255, 255], [0, 0, 0]);
+board.generateNotches();
 
 // global variables for colors
 const bg_color1 = [71, 222, 219];
@@ -149,8 +153,52 @@ function mouseClicked() {
 }
 
 function draw() {
+  drawTable(canvasWidth, canvasHeight);
+
   board.draw();
 }
+
+function drawTable(width, height) {
+  push();
+  strokeWeight(3);
+  stroke(0);
+  fill([50, 30, 15]);
+  rect(width * 2/3, 0, width, height);
+
+  fill([30, 20, 10]);
+  noStroke();
+  triangle(
+    width * 2/3, 0,
+    width * 2/3, height,
+    width, height
+  );
+
+  pop();
+
+  push();
+  noStroke();
+  fill([164, 116, 36]);
+  rect(0, 0, width * 2/3, height);
+  
+  strokeWeight(10);
+  strokeCap(SQUARE);
+  stroke([96, 59, 42]);
+
+  line(width * 2/3, 0, width * 2/3, height);
+
+  pop();
+}
+
+
+function keyTyped() {
+  if (key == '!') {
+    saveBlocksImages();
+  }
+  else if (key == '@') {
+    saveBlocksImages(true);
+  }
+}
+
 
 // LEGACY
 // function draw () {
@@ -196,11 +244,3 @@ function draw() {
 //   }
 // }
 
-function keyTyped() {
-  if (key == '!') {
-    saveBlocksImages();
-  }
-  else if (key == '@') {
-    saveBlocksImages(true);
-  }
-}
