@@ -1,3 +1,39 @@
+/**
+ * Card class.
+ */
+class Card {
+  /**
+   * Constructor.
+   * @param {string} suit The suit of the card.
+   * @param {string} symbol The symbol of the card.
+   * @param {number} value The value of the card.
+   */
+  constructor(suit, symbol, value) {
+    this.suit = suit;
+    this.symbol = symbol;
+    this.value = value;
+  }
+
+  /**
+   * Static method that creates a full deck.
+   * @returns {Array<Card>} Array of Card objects
+   */
+  static createDeck() {
+    // Admittedly this is overkill given that the faces will 
+    // only play once to determine its features, but oh well.
+    let suits = ["spade", "heart", "club", "diamond"];
+    let symbols = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+    let values = [11, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 10, 10];
+    let deck = [];
+
+    for (let suit of suits) for (let i=0; i<symbols.length; i++) {
+      deck.push(new Card(suit, symbols[i], values[i]));
+    }
+
+    return deck;
+  }
+}
+
 class JigsawPiece {
   /**
    * Creates and stroes two HalfPiece objects.
@@ -25,8 +61,93 @@ class JigsawPiece {
     return deck[ Math.floor( Math.random() * deck.length ) ];
   }
 
-  playerVsDealer() {
+  playerVsDealer(resolution=20) {
+    /** 
+     * THIS IS STILL A WORK IN PROGRESS:
+     * As of 17/04, this only compares the current score of the dealer and player
+     * this must change later on so that the player will actually play blackjack
+     */
 
+    // VERY primitive VS
+    // Needs to be change at a later date
+
+    // Reset face
+    this.player.facePoints = [];
+    this.dealer.facePoints = [];
+    this.player.leftEyePoints = [];
+    this.dealer.leftEyePoints = [];
+    this.player.rightEyePoints = [];
+    this.dealer.rightEyePoints = [];
+
+    let playerWin = this.player.score > this.dealer.score;
+
+    // Player mouth
+    for (let i=0; i<resolution; i++) {
+      this.player.facePoints.push(
+        this.player.rotatePoint(
+          [this.edgeLength / 4 + this.edgeLength / 10, this.edgeLength * 2/3], 
+          [this.edgeLength / 4, this.edgeLength * 2/3], 
+          ((playerWin) ? 1 : -1) * Math.PI * (i/resolution + 1/(2*resolution))
+        )
+      );
+    }
+    if (!playerWin) {
+      for (let fp of this.player.facePoints) {
+        fp[1] += this.edgeLength / 10;
+      }
+    }
+
+    // Player eyes 
+    for (let i=0; i<2*resolution; i++) {
+      this.player.leftEyePoints.push(
+        this.player.rotatePoint(
+          [this.edgeLength / 8, this.edgeLength * 2/3],
+          [this.edgeLength / 4 - this.edgeLength / 6, this.edgeLength * 2/3],
+          i * Math.PI / resolution
+        )
+      );
+      this.player.rightEyePoints.push(
+        this.player.rotatePoint(
+          [this.edgeLength / 8 + this.edgeLength / 3, this.edgeLength * 2/3],
+          [this.edgeLength / 4 + this.edgeLength / 6, this.edgeLength * 2/3],
+          i * Math.PI / resolution
+        )
+      );
+    }
+
+    // Dealer mouth
+    for (let i=0; i<resolution; i++) {
+      this.dealer.facePoints.push(
+        this.player.rotatePoint(
+          [this.edgeLength * 3/4 + this.edgeLength / 10, this.edgeLength/3], 
+          [this.edgeLength * 3/4, this.edgeLength/3 ], 
+          ((!playerWin) ? 1 : -1) * Math.PI * (i/resolution + 1/(2*resolution))
+        )
+      );
+    }
+    if (playerWin) {
+      for (let fp of this.dealer.facePoints) {
+        fp[1] += this.edgeLength / 10;
+      }
+    }
+
+    // Dealer eyes
+    for (let i=0; i<2*resolution; i++) {
+      this.dealer.leftEyePoints.push(
+        this.dealer.rotatePoint(
+          [this.edgeLength * 3/4 - this.edgeLength/8, this.edgeLength/3],
+          [this.edgeLength * 3/4 - this.edgeLength / 6, this.edgeLength/3],
+          i * Math.PI / resolution
+        )
+      );
+      this.dealer.rightEyePoints.push(
+        this.dealer.rotatePoint(
+          [this.edgeLength * 3/4 + this.edgeLength/8, this.edgeLength/3],
+          [this.edgeLength * 3/4 + this.edgeLength / 6, this.edgeLength/3],
+          i * Math.PI / resolution
+        )
+      );
+    }
   }
  
   compareTo(otherPiece, dir) {
@@ -85,13 +206,13 @@ class JigsawPiece {
     this.dealer.addCardToHand(this.pullRandom(deck));
   }
 
-  draw(xtranslate, ytranslate, rotationTransform, xScale, yScale) {
+  draw(xtranslate, ytranslate, rotationTransform, xScale, yScale, pass, ...args) {
     push();
     translate(this.x + xtranslate, this.y + ytranslate);
     angleMode(RADIANS);
 
-    this.player.draw(rotationTransform, xScale, yScale);
-    this.dealer.draw(rotationTransform, xScale, yScale);
+    this.player.draw(rotationTransform, xScale, yScale, pass, ...args);
+    this.dealer.draw(rotationTransform, xScale, yScale, pass, ...args);
     pop();
   }
 }
@@ -109,66 +230,93 @@ class HalfPiece {
   constructor(x, y, edgeLength, isPlayer) {
     // this.accessories = []; // for later
     this.hand = [];
-    this.totalValue = 0;
+    this.score = 0;
 
     this.x = x;
     this.y = y;
     this.edgeLength = edgeLength;
 
     this.playerType = (isPlayer) ? "player" : "dealer";
-    this.points = [ (isPlayer) ? [0, 0] : [edgeLength, edgeLength] ]; //this.generatePoints(edgeLength, notchDisplacement, notchEdge); // This needs to be done later after cards have been pulled and compared to one another.
+    this.points = [ (isPlayer) ? [0, 0] : [edgeLength, edgeLength] ]; 
+    this.facePoints = [];
+    this.leftEyePoints = [];
+    this.rightEyePoints = [];
   }
 
   addCardToHand(card) {
     this.hand.push(card);
-    this.totalValue += (card.symbol === "A" && this.totalValue + card.value > 21) ? 1 : card.value;
+    this.score += (card.symbol === "A" && this.score + card.value > 21) ? 1 : card.value;
   }
 
-  draw(rotationTransform, xScale, yScale) {
-    rotationTransform *=  Math.PI/180;
+  _applyTransforms(point, rotationTransform, xScale, yScale) {
+    // Apply rotation
+    let newXPoint = this.rotatePoint(point, [this.edgeLength / 2, this.edgeLength / 2], rotationTransform)[0];
+    let newYPoint = this.rotatePoint(point, [this.edgeLength / 2, this.edgeLength / 2], rotationTransform)[1];
+
+    // Apply x scaling
+    newXPoint = map(xScale, 0, 100, newXPoint, this.edgeLength/2);
+    newYPoint = map(yScale, 0, 100, newYPoint, this.edgeLength/2);
+
+    return [newXPoint, newYPoint];
+  }
+
+  draw(rotationTransform, xScale, yScale, pass, ...args) {
+    let transformedPoint;
+    rotationTransform *=  Math.PI/180; // Convert to radians
+    
     push();
-
-    strokeWeight(this.edgeLength/20);
-    strokeJoin(ROUND)
-    fill([80, 80, 80, 127]);
-    noStroke();
-
-    // Shadow
-    // beginShape();
-    // for (let p of this.points) { 
-      // vertex(this._rotatePoint(p, randomRotation)[0] + 13, this._rotatePoint(p, randomRotation)[1] + 7); 
-    // }
-    // endShape(CLOSE);
+    strokeWeight(this.edgeLength/60);
+    strokeJoin(ROUND);
 
     // Colours
-    stroke([20, 200, 120]);
-    fill([180, 90, 120]);
-    
-    // Drawing
+    if (pass === "shadow") {
+      fill([80, 80, 80, 127]);
+      noStroke();
+    }
+    else {
+      stroke([20, 200, 120]);
+      fill((this.playerType === "player") ? [180, 90, 120] : [40, 120, 200]);
+    }
+
+    // Drawing the outline
     beginShape();
-    let xPoint;
-    let yPoint;
     for (let p of this.points) {
+      transformedPoint = this._applyTransforms(p, rotationTransform, xScale, yScale);
+      vertex(transformedPoint[0] + ((pass === "shadow") ? args[0] : 0), transformedPoint[1] + ((pass === "shadow") ? args[1] : 0)); 
+    }
+    endShape(CLOSE);
+    
 
-      // Apply rotation
-      xPoint = this._rotatePoint(p, rotationTransform)[0];
-      yPoint = this._rotatePoint(p, rotationTransform)[1];
+    // Drawing the face
+    noFill();
+    // circle(this.edgeLength / 4, this.edgeLength * 3/4, 2);
+    beginShape();
+    for (let fp of this.facePoints) {
+      transformedPoint = this._applyTransforms(fp, rotationTransform, xScale, yScale);
+      vertex(transformedPoint[0], transformedPoint[1]);
+    }
+    endShape(CLOSE);
 
-      // Apply x scaling
-      xPoint = map(xScale, 0, 100, xPoint, this.edgeLength/2);
-      yPoint = map(yScale, 0, 100, yPoint, this.edgeLength/2);
-
-      
-      vertex(xPoint, yPoint); 
+    beginShape();
+    for (let ep of this.leftEyePoints) {
+      transformedPoint = this._applyTransforms(ep, rotationTransform, xScale, yScale);
+      vertex(transformedPoint[0], transformedPoint[1]);
+    }
+    endShape(CLOSE);
+    
+    beginShape();
+    for (let ep of this.rightEyePoints) {
+      transformedPoint = this._applyTransforms(ep, rotationTransform, xScale, yScale);
+      vertex(transformedPoint[0], transformedPoint[1]);
     }
     endShape(CLOSE);
 
     pop();
   }
 
-  _rotatePoint(point, angle) {
-    let newPointX = (point[0] - this.edgeLength / 2) * Math.cos(angle) - (point[1] - this.edgeLength / 2) * Math.sin(angle) + this.edgeLength / 2;
-    let newPointY = (point[0] - this.edgeLength / 2) * Math.sin(angle) + (point[1] - this.edgeLength / 2) * Math.cos(angle) + this.edgeLength / 2;
+  rotatePoint(point, centre, angle) {
+    let newPointX = (point[0] - centre[0]) * Math.cos(angle) - (point[1] - centre[1]) * Math.sin(angle) + centre[0];
+    let newPointY = (point[0] - centre[0]) * Math.sin(angle) + (point[1] - centre[1]) * Math.cos(angle) + centre[1];
 
     return [newPointX, newPointY];
   }

@@ -18,3 +18,6 @@ Added some background details to make it look less bland. Also added scattering 
 
 The pieces are now able to tile properly at different angles. Tomorrow, I will try to make it so that when the pieces are scaled either vertically or horizontally, they stay connected. The scattering effect has been temporarily removed. 
 The reason why I am going through all this effort is because I felt that just having a top down view of the pieces was kind of boring, and I want it to be possible to view them at different orthographic perspectives. The plan is to have them resting on a table as an incomplete puzzle, and also have a box in the background which has the complete set of pieces put together. Both the box and the puzzle pieces will show the faces (I will make these tomorrow).
+
+17/04
+The shadow is back, this time it renders correctly. The rest of the transformation code is complete; pieces now dislay appropriatly when scaled or rotated (this has the effect of the pieces appearing 3D, as there is a way to "change" perspective). As the blackjack code has not been finished, there is currently a very primitive competing code where the player and dealer simply compare their hands to see which one is bigger. Some primitive faces were added also, one for winning and losing.

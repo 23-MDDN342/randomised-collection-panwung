@@ -10,13 +10,24 @@ let slider6, slider7, slider8, slider9, slider10;
 let faceSelector;
 let faceGuideCheckbox;
 
-const jigsawPiece = new JigsawPiece(-9, -9, [0, 0], 18, 10, 5);
-// const jigsawPieceDummy = new JigsawPiece(-9, -9, [1, 0], 18, 10, 5);
+let dummyCard = new Card("spade", "11", 11);
 
-jigsawPiece.compareTo(undefined, "L");
-jigsawPiece.compareTo(undefined, "R");
-jigsawPiece.compareTo(undefined, "D");
-jigsawPiece.compareTo(undefined, "U");
+const jigsawPiece = new JigsawPiece(-9, -9, [1, 1], 18, 2, 2);
+jigsawPiece.pullInitialCards([dummyCard]);
+
+const dummyLeft = new JigsawPiece(0, 0, [0, 1], 18, 2, 2);
+dummyLeft.pullInitialCards([dummyCard]);
+const dummyRight = new JigsawPiece(0, 0, [2, 1], 18, 2, 2);
+dummyRight.pullInitialCards([dummyCard]);
+const dummyUp = new JigsawPiece(0, 0, [1, 0], 18, 2, 2);
+dummyUp.pullInitialCards([dummyCard]);
+const dummyDown = new JigsawPiece(0, 0, [1, 2], 18, 2, 2);
+dummyDown.pullInitialCards([dummyCard]);
+
+jigsawPiece.compareTo(dummyLeft, "L");
+jigsawPiece.compareTo(dummyDown, "D");
+jigsawPiece.compareTo(dummyRight, "R");
+jigsawPiece.compareTo(dummyUp, "U");
 
 function setup () {
 
@@ -26,15 +37,15 @@ function setup () {
 
   // create sliders
   slider1 = createSlider(-180, 180, 0); // Rotation
-  slider2 = createSlider(0, 100, 0);   // x Scale 
-  slider3 = createSlider(0, 100, 0);   // y Scale
+  slider2 = createSlider(0, 100, 0);    // x Scale 
+  slider3 = createSlider(0, 100, 0);    // y Scale
 
-  slider4 = createSlider(0, 100, 50);
-  slider5 = createSlider(0, 100, 50);
-  slider6 = createSlider(0, 100, 50);
-  slider7 = createSlider(0, 100, 50);
-  slider8 = createSlider(0, 100, 50);
-  slider9 = createSlider(0, 100, 50);
+  slider4 = createSlider(-1, 1, 0);   // Left notch
+  slider5 = createSlider(-1, 1, 0);   // Right notch
+  slider6 = createSlider(-1, 1, 0);   // Up notch
+  slider7 = createSlider(-1, 1, 0);   // Down notch
+  slider8 = createSlider(2, 30, 12);  // Player score
+  slider9 = createSlider(2, 30, 11);  // Dealer score
   slider10 = createSlider(0, 100, 50);
 
   slider1.parent('slider1Container');
@@ -93,7 +104,18 @@ function draw () {
 
   push();
   if (mode == '1') {
-    jigsawPiece.draw(0, 0, s1, s2, s3);
+    // Notches
+    jigsawPiece.player.points[2][0] = 2 * s4;
+    jigsawPiece.player.points[6][1] = jigsawPiece.edgeLength + 2 * s5;
+    jigsawPiece.dealer.points[2][0] = jigsawPiece.edgeLength + 2 * s6;
+    jigsawPiece.dealer.points[6][1] = 2 * s7;
+
+    jigsawPiece.player.score = s8;
+    jigsawPiece.dealer.score = s9;
+    jigsawPiece.playerVsDealer();
+
+    jigsawPiece.draw(0, 0, s1, s2, s3, "shadow", -1, 1);
+    jigsawPiece.draw(0, 0, s1, s2, s3, "object", 0, 0);
   }
 
   if (mode == '2') {
