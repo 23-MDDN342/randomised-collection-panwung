@@ -57,115 +57,88 @@ class JigsawPiece {
     this.dealer = new HalfPiece(x, y, edgeLength, false);
   }
 
-
-
-  playerVsDealer(resolution=20) {
-    /** 
-     * THIS IS STILL A WORK IN PROGRESS:
-     * As of 17/04, this only compares the current score of the dealer and player
-     * this must change later on so that the player will actually play blackjack
-     * 
-     * 
-     * 
-     * the face sections and eye sections and be convertd into methods. based on whether it is a
-     * player or a dealer, the points may change but the drawing should stay the same
-     * 
-     * What im trying to say is, move the point assigning code to dedicated methods that draw specific elements, so:
-     * VS Method:
-     *   generateEyes
-     *     angry
-     *     happy
-     *     sad
-     *     dead (for bust)
-     *     neutral
-     *     blackjack
-     *   generateMouth
-     *     Happy
-     *     Sad
-     *     Neutral
-     *     Open (for shock or dead?)
-     * 
-     * consider drawing eyebrows as well, though maybe not since a lot of realestate has been taken up already
-     * 
-     */
-
-    // VERY primitive VS
-    // Needs to be change at a later date
+  generateFace(competitor) {
+    const RESOLUTION = 30;
+    let target = (competitor === "player") ? this.player : this.dealer;
 
     // Reset face
-    this.player.facePoints = [];
-    this.dealer.facePoints = [];
-    this.player.leftEyePoints = [];
-    this.dealer.leftEyePoints = [];
-    this.player.rightEyePoints = [];
-    this.dealer.rightEyePoints = [];
+    target.facePoints = [];
+    target.leftEyePoints = [];
+    target.rightEyePoints = [];
 
-    let playerWin = this.player.score > this.dealer.score;
+    // Mouth points
+    let mouthX = (competitor === "player") ? this.edgeLength / 4 : this.edgeLength * 3/4;
+    let mouthY = (competitor === "player") ? this.edgeLength * 2/3 : this.edgeLength/3;
+    let mouthMaxDisplacement = [mouthX + this.edgeLength / 10, mouthY];
+    let mouthCenterRotation = [mouthX, mouthY];
 
-    // Player mouth
-    for (let i=0; i<resolution; i++) {
-      this.player.facePoints.push(
-        this.player.rotatePoint(
-          [this.edgeLength / 4 + this.edgeLength / 10, this.edgeLength * 2/3], 
-          [this.edgeLength / 4, this.edgeLength * 2/3], 
-          ((playerWin) ? 1 : -1) * Math.PI * (i/resolution + 1/(2*resolution))
-        )
-      );
-    }
-    if (!playerWin) {
-      for (let fp of this.player.facePoints) {
-        fp[1] += this.edgeLength / 10;
+    let leftEyeX = (competitor === "player") ? this.edgeLength / 8 : this.edgeLength * 3/4 - this.edgeLength/8;
+    let leftEyeY = (competitor === "player") ? this.edgeLength * 2/3 : this.edgeLength/3;
+
+    let rightEyeX = (competitor === "player") ? this.edgeLength * 11/24 : this.edgeLength * 3/4 + this.edgeLength/8;
+    let rightEyeY = (competitor === "player") ? this.edgeLength * 2/3 : this.edgeLength/3;
+
+    let leftEyeMaxDisplacement = [leftEyeX, leftEyeY];
+    let leftEyeCenterRotation = (competitor === "player") ? [this.edgeLength / 4 - this.edgeLength / 6, this.edgeLength * 2/3] : [this.edgeLength * 3/4 - this.edgeLength / 6, this.edgeLength/3];
+    
+    let rightEyeMaxDisplacement = [rightEyeX, rightEyeY];
+    let rightEyeCenterRotation = (competitor === "player") ? [this.edgeLength / 4 + this.edgeLength / 6, this.edgeLength * 2/3] : [this.edgeLength * 3/4 + this.edgeLength / 6, this.edgeLength/3];
+
+    // Mouth shape is a smile or sad face if the outcome is either a win or loss.
+    if (target.gameOutcome === "WIN" || target.gameOutcome === "LOSE") {
+      for (let i=0; i<RESOLUTION; i++) {
+        target.facePoints.push(
+          target.rotatePoint(
+            mouthMaxDisplacement, 
+            mouthCenterRotation, 
+            ((target.gameOutcome === "WIN") ? 1 : -1) * Math.PI * (i/RESOLUTION + 1/(2*RESOLUTION))
+          )
+        );
+      }
+      // Offset sad face slightly to make it in line.
+      if (target.gameOutcome === "LOSE") {
+        for (let fp of target.facePoints) {
+          fp[1] += this.edgeLength / 10;
+        }
       }
     }
 
-    // Player eyes 
-    for (let i=0; i<2*resolution; i++) {
-      this.player.leftEyePoints.push(
-        this.player.rotatePoint(
-          [this.edgeLength / 8, this.edgeLength * 2/3],
-          [this.edgeLength / 4 - this.edgeLength / 6, this.edgeLength * 2/3],
-          i * Math.PI / resolution
+    // Mouth is agape when gone bust.
+    else if (target.gameOutcome === "BUST") {
+      for (let i=0; i<RESOLUTION; i++) {
+        target.facePoints.push(
+          target.rotatePoint( 
+            mouthMaxDisplacement, 
+            mouthCenterRotation, 
+            ((target.gameOutcome === "WIN") ? 1 : -1) * 2 * Math.PI/RESOLUTION * i
+          )
         )
-      );
-      this.player.rightEyePoints.push(
-        this.player.rotatePoint(
-          [this.edgeLength / 8 + this.edgeLength / 3, this.edgeLength * 2/3],
-          [this.edgeLength / 4 + this.edgeLength / 6, this.edgeLength * 2/3],
-          i * Math.PI / resolution
-        )
-      );
-    }
-
-    // Dealer mouth
-    for (let i=0; i<resolution; i++) {
-      this.dealer.facePoints.push(
-        this.player.rotatePoint(
-          [this.edgeLength * 3/4 + this.edgeLength / 10, this.edgeLength/3], 
-          [this.edgeLength * 3/4, this.edgeLength/3 ], 
-          ((!playerWin) ? 1 : -1) * Math.PI * (i/resolution + 1/(2*resolution))
-        )
-      );
-    }
-    if (playerWin) {
-      for (let fp of this.dealer.facePoints) {
-        fp[1] += this.edgeLength / 10;
+      }
+      // Offset sad face slightly to make it in line.
+      if (target.gameOutcome === "BUST") {
+        for (let fp of target.facePoints) {
+          fp[1] += this.edgeLength / 10;
+        }
       }
     }
+    // Blackjack face
+    // Draw face
 
-    // Dealer eyes
-    for (let i=0; i<2*resolution; i++) {
-      this.dealer.leftEyePoints.push(
-        this.dealer.rotatePoint(
-          [this.edgeLength * 3/4 - this.edgeLength/8, this.edgeLength/3],
-          [this.edgeLength * 3/4 - this.edgeLength / 6, this.edgeLength/3],
-          i * Math.PI / resolution
+    // Eyes
+    for (let i=0; i<2*RESOLUTION; i++) {
+      target.leftEyePoints.push(
+        target.rotatePoint(
+          leftEyeMaxDisplacement,
+          leftEyeCenterRotation,
+          i * Math.PI / RESOLUTION
         )
       );
-      this.dealer.rightEyePoints.push(
-        this.dealer.rotatePoint(
-          [this.edgeLength * 3/4 + this.edgeLength/8, this.edgeLength/3],
-          [this.edgeLength * 3/4 + this.edgeLength / 6, this.edgeLength/3],
-          i * Math.PI / resolution
+
+      target.rightEyePoints.push(
+        target.rotatePoint(
+          rightEyeMaxDisplacement,
+          rightEyeCenterRotation,
+          i * Math.PI / RESOLUTION
         )
       );
     }
@@ -245,6 +218,7 @@ class HalfPiece {
     // this.accessories = []; // for later
     this.hand = [];
     this.score = 0;
+    this.gameOutcome = "draw";
 
     this.x = x;
     this.y = y;
@@ -300,6 +274,8 @@ class HalfPiece {
     else {
       stroke([255, 255, 255]);
       fill((this.playerType === "player") ? [157, 1, 1] : [0, 0, 0]);
+      if (this.gameOutcome === "DRAW") fill([127, 127, 127]);
+      if (this.gameOutcome === "BLACKJACK") fill([219, 172, 52]);
     }
 
     // Drawing the outline

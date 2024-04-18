@@ -52,8 +52,8 @@ function setup () {
   slider5 = createSlider(-1, 1, 0);   // Right notch
   slider6 = createSlider(-1, 1, 0);   // Up notch
   slider7 = createSlider(-1, 1, 0);   // Down notch
-  slider8 = createSlider(2, 30, 12);  // Player score
-  slider9 = createSlider(2, 30, 11);  // Dealer score
+  slider8 = createSlider(2, 22, 12);  // Player score
+  slider9 = createSlider(2, 22, 11);  // Dealer score
   slider10 = createSlider(0, 100, 50);
 
   slider1.parent('slider1Container');
@@ -120,7 +120,45 @@ function draw () {
 
     jigsawPiece.player.score = s8;
     jigsawPiece.dealer.score = s9;
-    jigsawPiece.playerVsDealer();
+
+    // Player bust
+    if (jigsawPiece.player.score > 21) {
+      jigsawPiece.player.gameOutcome = "BUST";
+      jigsawPiece.dealer.gameOutcome = "WIN";
+    }
+    // Dealer bust
+    else if (jigsawPiece.dealer.score > 21) {
+      jigsawPiece.player.gameOutcome = "WIN";
+      jigsawPiece.dealer.gameOutcome = "BUST";
+    }
+    // Draw
+    else if (jigsawPiece.player.score === jigsawPiece.dealer.score) {
+      jigsawPiece.player.gameOutcome = "DRAW";
+      jigsawPiece.dealer.gameOutcome = "DRAW";
+    }
+    // Player win
+    else if (jigsawPiece.player.score > jigsawPiece.dealer.score) {
+      jigsawPiece.player.gameOutcome = "WIN";
+      jigsawPiece.dealer.gameOutcome = "LOSE";
+
+      // Player blackjack
+      if (jigsawPiece.player.score === 21 && jigsawPiece.player.hand.length === 2) {
+        jigsawPiece.player.gameOutcome = "BLACKJACK";
+      }
+    }
+    // Dealer win
+    else if (jigsawPiece.player.score < jigsawPiece.dealer.score) {
+      jigsawPiece.player.gameOutcome = "LOSE";
+      jigsawPiece.dealer.gameOutcome = "WIN";
+
+      // Dealer blackjack
+      if (jigsawPiece.dealer.score === 21 && jigsawPiece.dealer.hand.length === 2) {
+        jigsawPiece.dealer.gameOutcome = "BLACKJACK";
+      }
+    }
+
+    jigsawPiece.generateFace("player");
+    jigsawPiece.generateFace("dealer");
 
     jigsawPiece.draw(0, 0, s1, s2, s3, "shadow", -1, 1);
     jigsawPiece.draw(0, 0, s1, s2, s3, "object", 0, 0);

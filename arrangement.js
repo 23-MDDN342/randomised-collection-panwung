@@ -11,11 +11,13 @@ class Board {
    * @param {number} edgeLength Edge length of triangle.
    * @param {number} notchDisplacement Notch displacement from edge.
    * @param {number} notchEdge Size of the notch.
+   * @param {number} playerStop Number that the player stops pulling cards at.
    * @param {number} dealerStop Number that the dealer stops pulling cards at.
    */
-  constructor(x, y, rows, columns, edgeLength, notchDisplacement, notchEdge, dealerStop=17) {
+  constructor(x, y, rows, columns, edgeLength, notchDisplacement, notchEdge, playerStop=19, dealerStop=17) {
     this.deck = Card.createDeck();
 
+    this.playerStop = playerStop;
     this.dealerStop = dealerStop;
 
     // Create new JigsawPiece objects.
@@ -43,11 +45,23 @@ class Board {
     return deck[ Math.floor( Math.random() * deck.length ) ];
   }
 
+  addToHand(competitor, card) {
+    competitor.addCardToHand(card);
+  }
+
+  /**
+   * 50/50 Chance of either returning true (heads) or false (tails).
+   * @returns {boolean} Outcome of coin flip.
+   */
+  coinFlip() {
+    return Math.random() < 0.5;
+  }
+
   pullInitialCards(piece, deck) {
-    piece.player.addCardToHand(this.pullRandom(deck));
-    piece.player.addCardToHand(this.pullRandom(deck));
-    piece.dealer.addCardToHand(this.pullRandom(deck));
-    piece.dealer.addCardToHand(this.pullRandom(deck));
+    this.addToHand(piece.player, this.pullRandom(deck));
+    this.addToHand(piece.player, this.pullRandom(deck));
+    this.addToHand(piece.dealer, this.pullRandom(deck));
+    this.addToHand(piece.dealer, this.pullRandom(deck));
   }
 
   generateNotches() {
@@ -81,10 +95,72 @@ class Board {
     return transformedPoint;
   }
 
-  compete(resolution) {
+  compete() {
     for (let c=0; c<this.jigsawPieces.length; c++) {
       for (let r=0; r<this.jigsawPieces[0].length; r++) {
-        this.jigsawPieces[c][r].playerVsDealer(resolution)
+        let jp = this.jigsawPieces[c][r];
+        let player = jp.player;
+        let dealer = jp.dealer;
+
+        // Player and dealer AI 
+
+        // The player, like in actual black jack, can only see the dealer's first card.
+        while (player.score < this.playerStop) {
+          // If the player's score is less than 11, it will pull.
+          if (player.score < 11) { this.addToHand(player, this.pullRandom(this.deck)); }
+
+          // If the player's score is less than 15 but the dealer's visible card is a 10 or ace, panic pull.
+          if (player.score < 15 && dealer.hand[0].value >= 10) { this.addToHand(player, this.pullRandom(this.deck)); }
+
+          // If the player's score is less than 15, flip a coin to either pull again or stop.
+          if (player.score < 15 && this.coinFlip()) { this.addToHand(player, this.pullRandom(this.deck)); }
+          else { break; }
+        }
+
+        // Dealer simply pulls until its score reaches 17 or higher, unless the player has gone bust.
+        while (dealer.score < this.dealerStop && player.score < 22) {
+          this.addToHand(dealer, this.pullRandom(this.deck));
+        }
+
+        // Player bust
+        if (player.score > 21) {
+          player.gameOutcome = "BUST";
+          dealer.gameOutcome = "WIN";
+        }
+        // Dealer bust
+        else if (dealer.score > 21) {
+          player.gameOutcome = "WIN";
+          dealer.gameOutcome = "BUST";
+        }
+        // Draw
+        else if (player.score === dealer.score) {
+          player.gameOutcome = "DRAW";
+          dealer.gameOutcome = "DRAW";
+        }
+        // Player win
+        else if (player.score > dealer.score) {
+          player.gameOutcome = "WIN";
+          dealer.gameOutcome = "LOSE";
+
+          // Player blackjack
+          if (player.score === 21 && player.hand.length === 2) {
+            player.gameOutcome = "BLACKJACK";
+          }
+        }
+        // Dealer win
+        else if (player.score < dealer.score) {
+          player.gameOutcome = "LOSE";
+          dealer.gameOutcome = "WIN";
+
+          // Dealer blackjack
+          if (dealer.score === 21 && dealer.hand.length === 2) {
+            dealer.gameOutcome = "BLACKJACK";
+          }
+        }
+
+        // Generate faces based on outcome.
+        jp.generateFace("player");
+        jp.generateFace("dealer");
       }
     }
   }

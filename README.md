@@ -21,3 +21,6 @@ The reason why I am going through all this effort is because I felt that just ha
 
 17/04
 The shadow is back, this time it renders correctly. The rest of the transformation code is complete; pieces now dislay appropriatly when scaled or rotated (this has the effect of the pieces appearing 3D, as there is a way to "change" perspective). As the blackjack code has not been finished, there is currently a very primitive competing code where the player and dealer simply compare their hands to see which one is bigger. Some primitive faces were added also, one for winning and losing.
+
+18/04
+Added new mouth type shock, which happens when a competitor goes bust. X eyes still need to be added for this game outcome. A simple AI representing the player's moves have been added, as well as multiple end game states (WIN, LOSE, BUST, DRAW, BLACKJACK). The colours have also been updated; red is the player and black is the dealer. Some temporary colours have been added for the DRAW state (grey) and the BLACKJACK state (gold). 
