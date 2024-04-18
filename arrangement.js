@@ -11,16 +11,10 @@ class Board {
    * @param {number} edgeLength Edge length of triangle.
    * @param {number} notchDisplacement Notch displacement from edge.
    * @param {number} notchEdge Size of the notch.
-   * @param {number|Array<number>} winColor Colour of the winner.
-   * @param {number|Array<number>} loseColor  Colour of the loser.
    * @param {number} dealerStop Number that the dealer stops pulling cards at.
    */
-  constructor(x, y, rows, columns, edgeLength, notchDisplacement, notchEdge, winColor, loseColor, dealerStop=17) {
-
+  constructor(x, y, rows, columns, edgeLength, notchDisplacement, notchEdge, dealerStop=17) {
     this.deck = Card.createDeck();
-
-    this.winColor = winColor; // FOR LATER
-    this.loseColor = loseColor; // FOR LATER
 
     this.dealerStop = dealerStop;
 
@@ -38,15 +32,22 @@ class Board {
           notchDisplacement,
           notchEdge,
         );
-        jp.pullInitialCards(this.deck);
+        this.pullInitialCards(jp, this.deck);
         currentRow.push(jp);
       }
       this.jigsawPieces.push(currentRow);
     }
+  }
 
-    // later
-    // this.bjColor
-    // this.bustCol
+  pullRandom(deck) {
+    return deck[ Math.floor( Math.random() * deck.length ) ];
+  }
+
+  pullInitialCards(piece, deck) {
+    piece.player.addCardToHand(this.pullRandom(deck));
+    piece.player.addCardToHand(this.pullRandom(deck));
+    piece.dealer.addCardToHand(this.pullRandom(deck));
+    piece.dealer.addCardToHand(this.pullRandom(deck));
   }
 
   generateNotches() {
@@ -73,11 +74,11 @@ class Board {
   }
 
   _calculatePointTransform(point, rotationPoint, rotationTransform, xScale, yScale, mapTo) {
-    let rotatedPoint = this._rotatePoint(point, rotationPoint, rotationTransform * Math.PI/180);
-    rotatedPoint[0] = map(xScale, 0, 100, rotatedPoint[0], mapTo[0]);
-    rotatedPoint[1] = map(yScale, 0, 100, rotatedPoint[1], mapTo[1]);
+    let transformedPoint = this._rotatePoint(point, rotationPoint, rotationTransform * Math.PI/180);
+    transformedPoint[0] = map(xScale, 0, 100, transformedPoint[0], mapTo[0]);
+    transformedPoint[1] = map(yScale, 0, 100, transformedPoint[1], mapTo[1]);
 
-    return rotatedPoint;
+    return transformedPoint;
   }
 
   compete(resolution) {
@@ -204,12 +205,12 @@ let lastSwapTime = 0;
 const millisPerSwap = 3000;
 
 const ROWS = 3;
-const COLS = 2;
-const EDGE_LENGTH = 130;
+const COLS = 4;
+const EDGE_LENGTH = 110;
 let rot = 0;
 let xScale = 0;
 let yScale = 0;
-const board = new Board(canvasWidth/2 - 200, canvasHeight/3 - 100, ROWS, COLS, EDGE_LENGTH, 8, 5, [255, 255, 255], [0, 0, 0]);
+const board = new Board(canvasWidth/4, 10, ROWS, COLS, EDGE_LENGTH, 8, 5);
 board.generateNotches();
 board.compete(20);
 

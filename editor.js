@@ -13,16 +13,24 @@ let faceGuideCheckbox;
 let dummyCard = new Card("spade", "11", 11);
 
 const jigsawPiece = new JigsawPiece(-9, -9, [1, 1], 18, 2, 2);
-jigsawPiece.pullInitialCards([dummyCard]);
+jigsawPiece.player.hand.push([dummyCard, dummyCard]);
+jigsawPiece.dealer.hand.push([dummyCard, dummyCard]);
 
 const dummyLeft = new JigsawPiece(0, 0, [0, 1], 18, 2, 2);
-dummyLeft.pullInitialCards([dummyCard]);
+dummyLeft.player.hand.push([dummyCard, dummyCard]);
+dummyLeft.dealer.hand.push([dummyCard, dummyCard]);
+
 const dummyRight = new JigsawPiece(0, 0, [2, 1], 18, 2, 2);
-dummyRight.pullInitialCards([dummyCard]);
+dummyRight.player.hand.push([dummyCard, dummyCard]);
+dummyRight.dealer.hand.push([dummyCard, dummyCard]);
+
 const dummyUp = new JigsawPiece(0, 0, [1, 0], 18, 2, 2);
-dummyUp.pullInitialCards([dummyCard]);
+dummyUp.player.hand.push([dummyCard, dummyCard]);
+dummyUp.dealer.hand.push([dummyCard, dummyCard]);
+
 const dummyDown = new JigsawPiece(0, 0, [1, 2], 18, 2, 2);
-dummyDown.pullInitialCards([dummyCard]);
+dummyDown.player.hand.push([dummyCard, dummyCard]);
+dummyDown.dealer.hand.push([dummyCard, dummyCard]);
 
 jigsawPiece.compareTo(dummyLeft, "L");
 jigsawPiece.compareTo(dummyDown, "D");

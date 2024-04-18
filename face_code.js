@@ -57,15 +57,36 @@ class JigsawPiece {
     this.dealer = new HalfPiece(x, y, edgeLength, false);
   }
 
-  pullRandom(deck) {
-    return deck[ Math.floor( Math.random() * deck.length ) ];
-  }
+
 
   playerVsDealer(resolution=20) {
     /** 
      * THIS IS STILL A WORK IN PROGRESS:
      * As of 17/04, this only compares the current score of the dealer and player
      * this must change later on so that the player will actually play blackjack
+     * 
+     * 
+     * 
+     * the face sections and eye sections and be convertd into methods. based on whether it is a
+     * player or a dealer, the points may change but the drawing should stay the same
+     * 
+     * What im trying to say is, move the point assigning code to dedicated methods that draw specific elements, so:
+     * VS Method:
+     *   generateEyes
+     *     angry
+     *     happy
+     *     sad
+     *     dead (for bust)
+     *     neutral
+     *     blackjack
+     *   generateMouth
+     *     Happy
+     *     Sad
+     *     Neutral
+     *     Open (for shock or dead?)
+     * 
+     * consider drawing eyebrows as well, though maybe not since a lot of realestate has been taken up already
+     * 
      */
 
     // VERY primitive VS
@@ -199,13 +220,6 @@ class JigsawPiece {
     }
   }
 
-  pullInitialCards(deck) {
-    this.player.addCardToHand(this.pullRandom(deck));
-    this.player.addCardToHand(this.pullRandom(deck));
-    this.dealer.addCardToHand(this.pullRandom(deck));
-    this.dealer.addCardToHand(this.pullRandom(deck));
-  }
-
   draw(xtranslate, ytranslate, rotationTransform, xScale, yScale, pass, ...args) {
     push();
     translate(this.x + xtranslate, this.y + ytranslate);
@@ -248,10 +262,21 @@ class HalfPiece {
     this.score += (card.symbol === "A" && this.score + card.value > 21) ? 1 : card.value;
   }
 
+  /**
+   * Private method for transforming the position of a given point. 
+   * The centre point of rotation is the centre of the piece.
+   * Note that this is meant to be used at render time, and does not modify any values within this.points array.
+   * @param {Array<number>} point An array containing an x value and y value.
+   * @param {number} rotationTransform Amount to rotate the point around the piece's centre, in degrees.
+   * @param {number} xScale Percent amount to scale the point inward on the x direction.
+   * @param {number} yScale Percent amount to scale the point inward on the y direction.
+   * @returns {Array<number>} Transformed point.
+   */
   _applyTransforms(point, rotationTransform, xScale, yScale) {
+    let centerPointOfRotation = [this.edgeLength / 2, this.edgeLength / 2];
     // Apply rotation
-    let newXPoint = this.rotatePoint(point, [this.edgeLength / 2, this.edgeLength / 2], rotationTransform)[0];
-    let newYPoint = this.rotatePoint(point, [this.edgeLength / 2, this.edgeLength / 2], rotationTransform)[1];
+    let newXPoint = this.rotatePoint(point, centerPointOfRotation, rotationTransform * Math.PI/180)[0];
+    let newYPoint = this.rotatePoint(point, centerPointOfRotation, rotationTransform * Math.PI/180)[1];
 
     // Apply x scaling
     newXPoint = map(xScale, 0, 100, newXPoint, this.edgeLength/2);
@@ -262,7 +287,6 @@ class HalfPiece {
 
   draw(rotationTransform, xScale, yScale, pass, ...args) {
     let transformedPoint;
-    rotationTransform *=  Math.PI/180; // Convert to radians
     
     push();
     strokeWeight(this.edgeLength/60);
@@ -274,8 +298,8 @@ class HalfPiece {
       noStroke();
     }
     else {
-      stroke([20, 200, 120]);
-      fill((this.playerType === "player") ? [180, 90, 120] : [40, 120, 200]);
+      stroke([255, 255, 255]);
+      fill((this.playerType === "player") ? [157, 1, 1] : [0, 0, 0]);
     }
 
     // Drawing the outline
@@ -289,7 +313,7 @@ class HalfPiece {
 
     // Drawing the face
     noFill();
-    // circle(this.edgeLength / 4, this.edgeLength * 3/4, 2);
+    stroke((this.playerType === "player") ? [0, 0, 0] : [255, 255, 255]);
     beginShape();
     for (let fp of this.facePoints) {
       transformedPoint = this._applyTransforms(fp, rotationTransform, xScale, yScale);
