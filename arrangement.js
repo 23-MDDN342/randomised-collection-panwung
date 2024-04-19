@@ -125,17 +125,17 @@ class Board {
         // Player bust
         if (player.score > 21) {
           player.gameOutcome = "BUST";
-          dealer.gameOutcome = "WIN";
+          dealer.gameOutcome = (dealer.score === 21 && dealer.hand.length === 2) ? "BLACKJACK" : "WIN";
         }
         // Dealer bust
         else if (dealer.score > 21) {
-          player.gameOutcome = "WIN";
+          player.gameOutcome = (player.score === 21 && player.hand.length === 2) ? "BLACKJACK" : "WIN";
           dealer.gameOutcome = "BUST";
         }
-        // Draw
+        // Push
         else if (player.score === dealer.score) {
-          player.gameOutcome = "DRAW";
-          dealer.gameOutcome = "DRAW";
+          player.gameOutcome = "PUSH";
+          dealer.gameOutcome = "PUSH";
         }
         // Player win
         else if (player.score > dealer.score) {
@@ -145,6 +145,7 @@ class Board {
           // Player blackjack
           if (player.score === 21 && player.hand.length === 2) {
             player.gameOutcome = "BLACKJACK";
+            dealer.gameOutcome = "BLACKJACKLOSS";
           }
         }
         // Dealer win
@@ -154,6 +155,7 @@ class Board {
 
           // Dealer blackjack
           if (dealer.score === 21 && dealer.hand.length === 2) {
+            player.gameOutcome = "BLACKJACKLOSS";
             dealer.gameOutcome = "BLACKJACK";
           }
         }
@@ -286,7 +288,7 @@ const EDGE_LENGTH = 110;
 let rot = 0;
 let xScale = 0;
 let yScale = 0;
-const board = new Board(canvasWidth/4, 10, ROWS, COLS, EDGE_LENGTH, 8, 5);
+const board = new Board(canvasWidth/4, 10, ROWS, COLS, EDGE_LENGTH, 8, 10);
 board.generateNotches();
 board.compete(20);
 

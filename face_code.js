@@ -36,7 +36,7 @@ class Card {
 
 class JigsawPiece {
   /**
-   * Creates and stroes two HalfPiece objects.
+   * Creates and stroes two Competitor objects.
    * @param {number} x x coord of corner of triangle.
    * @param {number} y y coord of corner of triangle.
    * @param {Array<number>} gridPos Position on board.
@@ -53,8 +53,8 @@ class JigsawPiece {
     this.notchDisplacement = notchDisplacement;
     this.notchEdge = notchEdge;
 
-    this.player = new HalfPiece(x, y, edgeLength, true);
-    this.dealer = new HalfPiece(x, y, edgeLength, false);
+    this.player = new Competitor(x, y, edgeLength, true);
+    this.dealer = new Competitor(x, y, edgeLength, false);
   }
 
   generateFace(competitor) {
@@ -75,7 +75,7 @@ class JigsawPiece {
     let leftEyeX = (competitor === "player") ? this.edgeLength / 8 : this.edgeLength * 3/4 - this.edgeLength/8;
     let leftEyeY = (competitor === "player") ? this.edgeLength * 2/3 : this.edgeLength/3;
 
-    let rightEyeX = (competitor === "player") ? this.edgeLength * 11/24 : this.edgeLength * 3/4 + this.edgeLength/8;
+    let rightEyeX = (competitor === "player") ? this.edgeLength * 11/24 : this.edgeLength * 3/4 + this.edgeLength/8 +  this.edgeLength/12;
     let rightEyeY = (competitor === "player") ? this.edgeLength * 2/3 : this.edgeLength/3;
 
     let leftEyeMaxDisplacement = [leftEyeX, leftEyeY];
@@ -85,18 +85,18 @@ class JigsawPiece {
     let rightEyeCenterRotation = (competitor === "player") ? [this.edgeLength / 4 + this.edgeLength / 6, this.edgeLength * 2/3] : [this.edgeLength * 3/4 + this.edgeLength / 6, this.edgeLength/3];
 
     // Mouth shape is a smile or sad face if the outcome is either a win or loss.
-    if (target.gameOutcome === "WIN" || target.gameOutcome === "LOSE") {
+    if (target.gameOutcome === "WIN" || target.gameOutcome === "BLACKJACK" || target.gameOutcome === "LOSE" || target.gameOutcome === "BLACKJACKLOSS") {
       for (let i=0; i<RESOLUTION; i++) {
         target.facePoints.push(
           target.rotatePoint(
             mouthMaxDisplacement, 
             mouthCenterRotation, 
-            ((target.gameOutcome === "WIN") ? 1 : -1) * Math.PI * (i/RESOLUTION + 1/(2*RESOLUTION))
+            ((target.gameOutcome === "WIN" || target.gameOutcome === "BLACKJACK") ? 1 : -1) * Math.PI * (i/RESOLUTION + 1/(2*RESOLUTION))
           )
         );
       }
       // Offset sad face slightly to make it in line.
-      if (target.gameOutcome === "LOSE") {
+      if (target.gameOutcome === "LOSE"|| target.gameOutcome === "BLACKJACKLOSS") {
         for (let fp of target.facePoints) {
           fp[1] += this.edgeLength / 10;
         }
@@ -108,7 +108,7 @@ class JigsawPiece {
       for (let i=0; i<RESOLUTION; i++) {
         target.facePoints.push(
           target.rotatePoint( 
-            mouthMaxDisplacement, 
+            [mouthMaxDisplacement[0] - this.edgeLength/100, mouthMaxDisplacement[1]], 
             mouthCenterRotation, 
             ((target.gameOutcome === "WIN") ? 1 : -1) * 2 * Math.PI/RESOLUTION * i
           )
@@ -117,30 +117,66 @@ class JigsawPiece {
       // Offset sad face slightly to make it in line.
       if (target.gameOutcome === "BUST") {
         for (let fp of target.facePoints) {
-          fp[1] += this.edgeLength / 10;
+          fp[1] += this.edgeLength / 12;
         }
       }
     }
-    // Blackjack face
-    // Draw face
 
-    // Eyes
-    for (let i=0; i<2*RESOLUTION; i++) {
+    // Push face
+    else if (target.gameOutcome === "PUSH") {
+      target.facePoints.push(
+        [mouthCenterRotation[0] - this.edgeLength / 10, mouthCenterRotation[1] + this.edgeLength / 20],
+        [mouthCenterRotation[0] + this.edgeLength / 10, mouthCenterRotation[1] + this.edgeLength / 20],
+      );
+    }
+
+    if (target.gameOutcome === "BUST") {
       target.leftEyePoints.push(
-        target.rotatePoint(
-          leftEyeMaxDisplacement,
-          leftEyeCenterRotation,
-          i * Math.PI / RESOLUTION
-        )
-      );
+        [leftEyeCenterRotation[0] - this.edgeLength/20, leftEyeCenterRotation[1] - this.edgeLength/20],
+        [leftEyeCenterRotation[0] + this.edgeLength/20, leftEyeCenterRotation[1] + this.edgeLength/20],
 
-      target.rightEyePoints.push(
-        target.rotatePoint(
-          rightEyeMaxDisplacement,
-          rightEyeCenterRotation,
-          i * Math.PI / RESOLUTION
-        )
+        [leftEyeCenterRotation[0] + this.edgeLength/20, leftEyeCenterRotation[1] - this.edgeLength/20],
+        [leftEyeCenterRotation[0] - this.edgeLength/20, leftEyeCenterRotation[1] + this.edgeLength/20],
       );
+      target.rightEyePoints.push(
+        [rightEyeCenterRotation[0] - this.edgeLength/20, rightEyeCenterRotation[1] - this.edgeLength/20],
+        [rightEyeCenterRotation[0] + this.edgeLength/20, rightEyeCenterRotation[1] + this.edgeLength/20],
+
+        [rightEyeCenterRotation[0] + this.edgeLength/20, rightEyeCenterRotation[1] - this.edgeLength/20],
+        [rightEyeCenterRotation[0] - this.edgeLength/20, rightEyeCenterRotation[1] + this.edgeLength/20],
+      );
+    }
+    else {
+      let leftEyeShape = Math.PI / RESOLUTION;
+      let rightEyeShape = Math.PI / RESOLUTION;
+
+      if ((target.gameOutcome === "BLACKJACKLOSS")) {
+        leftEyeShape *= 2/3;
+        rightEyeShape *= -2/3
+      }
+      else if ((target.gameOutcome === "BLACKJACK")) {
+        leftEyeShape *= -2/3;
+        rightEyeShape *= 2/3
+      }
+
+      // Eyes - NEEDS CONDITIONALS
+      for (let i=0; i<2*RESOLUTION; i++) {
+        target.leftEyePoints.push(
+          target.rotatePoint(
+            leftEyeMaxDisplacement,
+            leftEyeCenterRotation,
+            i * leftEyeShape
+          )
+        );
+
+        target.rightEyePoints.push(
+          target.rotatePoint(
+            rightEyeMaxDisplacement,
+            rightEyeCenterRotation,
+            i * rightEyeShape + Math.PI
+          )
+        );
+      }
     }
   }
  
@@ -204,7 +240,7 @@ class JigsawPiece {
   }
 }
 
-class HalfPiece {
+class Competitor {
   /**
    * Creates a triangle which is half of the jigsaw piece.
    * @param {number} x x coord of corner of triangle.
@@ -231,9 +267,11 @@ class HalfPiece {
     this.rightEyePoints = [];
   }
 
-  addCardToHand(card) {
-    this.hand.push(card);
-    this.score += (card.symbol === "A" && this.score + card.value > 21) ? 1 : card.value;
+  addCardToHand(...cards) {
+    for (let card of cards) {
+      this.hand.push(card);
+      this.score += (card.symbol === "A" && this.score + card.value > 21) ? 1 : card.value;
+    }
   }
 
   /**
@@ -274,7 +312,7 @@ class HalfPiece {
     else {
       stroke([255, 255, 255]);
       fill((this.playerType === "player") ? [157, 1, 1] : [0, 0, 0]);
-      if (this.gameOutcome === "DRAW") fill([127, 127, 127]);
+      if (this.gameOutcome === "PUSH") fill([150, 127, 150]);
       if (this.gameOutcome === "BLACKJACK") fill([219, 172, 52]);
     }
 
@@ -286,7 +324,6 @@ class HalfPiece {
     }
     endShape(CLOSE);
     
-
     // Drawing the face
     noFill();
     stroke((this.playerType === "player") ? [0, 0, 0] : [255, 255, 255]);
@@ -297,19 +334,50 @@ class HalfPiece {
     }
     endShape(CLOSE);
 
-    beginShape();
-    for (let ep of this.leftEyePoints) {
-      transformedPoint = this._applyTransforms(ep, rotationTransform, xScale, yScale);
-      vertex(transformedPoint[0], transformedPoint[1]);
+    // Eyes
+    if (this.gameOutcome === "BUST") {
+      // I got lazy here
+      beginShape();
+      for (let i=0; i<2; i++) {
+        transformedPoint = this._applyTransforms(this.leftEyePoints[i], rotationTransform, xScale, yScale);
+        vertex(transformedPoint[0], transformedPoint[1]);
+      }
+      endShape(CLOSE);
+      beginShape();
+      for (let i=2; i<4; i++) {
+        transformedPoint = this._applyTransforms(this.leftEyePoints[i], rotationTransform, xScale, yScale);
+        vertex(transformedPoint[0], transformedPoint[1]);
+      }
+      endShape(CLOSE);
+
+      beginShape();
+      for (let i=0; i<2; i++) {
+        transformedPoint = this._applyTransforms(this.rightEyePoints[i], rotationTransform, xScale, yScale);
+        vertex(transformedPoint[0], transformedPoint[1]);
+      }
+      endShape(CLOSE);
+      beginShape();
+      for (let i=2; i<4; i++) {
+        transformedPoint = this._applyTransforms(this.rightEyePoints[i], rotationTransform, xScale, yScale);
+        vertex(transformedPoint[0], transformedPoint[1]);
+      }
+      endShape(CLOSE);
     }
-    endShape(CLOSE);
-    
-    beginShape();
-    for (let ep of this.rightEyePoints) {
-      transformedPoint = this._applyTransforms(ep, rotationTransform, xScale, yScale);
-      vertex(transformedPoint[0], transformedPoint[1]);
+    else {
+      beginShape();
+      for (let ep of this.leftEyePoints) {
+        transformedPoint = this._applyTransforms(ep, rotationTransform, xScale, yScale);
+        vertex(transformedPoint[0], transformedPoint[1]);
+      }
+      endShape(CLOSE);
+
+      beginShape();
+      for (let ep of this.rightEyePoints) {
+        transformedPoint = this._applyTransforms(ep, rotationTransform, xScale, yScale);
+        vertex(transformedPoint[0], transformedPoint[1]);
+      }
+      endShape(CLOSE);
     }
-    endShape(CLOSE);
 
     pop();
   }

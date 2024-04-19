@@ -10,27 +10,27 @@ let slider6, slider7, slider8, slider9, slider10;
 let faceSelector;
 let faceGuideCheckbox;
 
-let dummyCard = new Card("spade", "11", 11);
+let dummyCard = new Card("null", "JKR", 0);
 
 const jigsawPiece = new JigsawPiece(-9, -9, [1, 1], 18, 2, 2);
-jigsawPiece.player.hand.push([dummyCard, dummyCard]);
-jigsawPiece.dealer.hand.push([dummyCard, dummyCard]);
+jigsawPiece.player.hand.push(dummyCard, dummyCard);
+jigsawPiece.dealer.hand.push(dummyCard, dummyCard);
 
 const dummyLeft = new JigsawPiece(0, 0, [0, 1], 18, 2, 2);
-dummyLeft.player.hand.push([dummyCard, dummyCard]);
-dummyLeft.dealer.hand.push([dummyCard, dummyCard]);
+dummyLeft.player.hand.push(dummyCard, dummyCard);
+dummyLeft.dealer.hand.push(dummyCard, dummyCard);
 
 const dummyRight = new JigsawPiece(0, 0, [2, 1], 18, 2, 2);
-dummyRight.player.hand.push([dummyCard, dummyCard]);
-dummyRight.dealer.hand.push([dummyCard, dummyCard]);
+dummyRight.player.hand.push(dummyCard, dummyCard);
+dummyRight.dealer.hand.push(dummyCard, dummyCard);
 
 const dummyUp = new JigsawPiece(0, 0, [1, 0], 18, 2, 2);
-dummyUp.player.hand.push([dummyCard, dummyCard]);
-dummyUp.dealer.hand.push([dummyCard, dummyCard]);
+dummyUp.player.hand.push(dummyCard, dummyCard);
+dummyUp.dealer.hand.push(dummyCard, dummyCard);
 
 const dummyDown = new JigsawPiece(0, 0, [1, 2], 18, 2, 2);
-dummyDown.player.hand.push([dummyCard, dummyCard]);
-dummyDown.dealer.hand.push([dummyCard, dummyCard]);
+dummyDown.player.hand.push(dummyCard, dummyCard);
+dummyDown.dealer.hand.push(dummyCard, dummyCard);
 
 jigsawPiece.compareTo(dummyLeft, "L");
 jigsawPiece.compareTo(dummyDown, "D");
@@ -124,17 +124,17 @@ function draw () {
     // Player bust
     if (jigsawPiece.player.score > 21) {
       jigsawPiece.player.gameOutcome = "BUST";
-      jigsawPiece.dealer.gameOutcome = "WIN";
+      jigsawPiece.dealer.gameOutcome = (jigsawPiece.dealer.score === 21 && jigsawPiece.dealer.hand.length === 2) ? "BLACKJACK" : "WIN";
     }
     // Dealer bust
     else if (jigsawPiece.dealer.score > 21) {
-      jigsawPiece.player.gameOutcome = "WIN";
+      jigsawPiece.player.gameOutcome = (jigsawPiece.player.score === 21 && jigsawPiece.player.hand.length === 2) ? "BLACKJACK" : "WIN";
       jigsawPiece.dealer.gameOutcome = "BUST";
     }
-    // Draw
+    // Push
     else if (jigsawPiece.player.score === jigsawPiece.dealer.score) {
-      jigsawPiece.player.gameOutcome = "DRAW";
-      jigsawPiece.dealer.gameOutcome = "DRAW";
+      jigsawPiece.player.gameOutcome = "PUSH";
+      jigsawPiece.dealer.gameOutcome = "PUSH";
     }
     // Player win
     else if (jigsawPiece.player.score > jigsawPiece.dealer.score) {
@@ -144,6 +144,7 @@ function draw () {
       // Player blackjack
       if (jigsawPiece.player.score === 21 && jigsawPiece.player.hand.length === 2) {
         jigsawPiece.player.gameOutcome = "BLACKJACK";
+        jigsawPiece.dealer.gameOutcome = "BLACKJACKLOSS";
       }
     }
     // Dealer win
@@ -153,6 +154,7 @@ function draw () {
 
       // Dealer blackjack
       if (jigsawPiece.dealer.score === 21 && jigsawPiece.dealer.hand.length === 2) {
+        jigsawPiece.player.gameOutcome = "BLACKJACKLOSS";
         jigsawPiece.dealer.gameOutcome = "BLACKJACK";
       }
     }

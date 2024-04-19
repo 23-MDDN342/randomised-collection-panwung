@@ -24,3 +24,6 @@ The shadow is back, this time it renders correctly. The rest of the transformati
 
 18/04
 Added new mouth type shock, which happens when a competitor goes bust. X eyes still need to be added for this game outcome. A simple AI representing the player's moves have been added, as well as multiple end game states (WIN, LOSE, BUST, DRAW, BLACKJACK). The colours have also been updated; red is the player and black is the dealer. Some temporary colours have been added for the DRAW state (grey) and the BLACKJACK state (gold). 
+
+19/04
+Made a series of new faces and eyes: neutral face, angry, dead and blackjack eyes. More details need to be added to the face based on the suits of each competitors cards, and maybe even what symbols the cards are. I'm thinking of suits being different notch shapes, however, this may take tweaking existing elements of my code.
