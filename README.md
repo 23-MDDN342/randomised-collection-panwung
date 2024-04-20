@@ -27,3 +27,7 @@ Added new mouth type shock, which happens when a competitor goes bust. X eyes st
 
 19/04
 Made a series of new faces and eyes: neutral face, angry, dead and blackjack eyes. More details need to be added to the face based on the suits of each competitors cards, and maybe even what symbols the cards are. I'm thinking of suits being different notch shapes, however, this may take tweaking existing elements of my code.
+
+20/4
+Added new eye expression for "LOSE", which occurs whenever a competitor has lost but not to blackjack or bust.
+Began working on different notches based on the suit of the competitors first card. So far "spade", "club", and "diamond" have unique notches; point, square, and trapezoid respectivly. I have also begun working on the arrangement of the pieces. 

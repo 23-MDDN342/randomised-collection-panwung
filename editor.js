@@ -10,32 +10,32 @@ let slider6, slider7, slider8, slider9, slider10;
 let faceSelector;
 let faceGuideCheckbox;
 
-let dummyCard = new Card("null", "JKR", 0);
+let _dummyCard = new Card("spade", "JKR", 0);
 
 const jigsawPiece = new JigsawPiece(-9, -9, [1, 1], 18, 2, 2);
-jigsawPiece.player.hand.push(dummyCard, dummyCard);
-jigsawPiece.dealer.hand.push(dummyCard, dummyCard);
+jigsawPiece.player.hand.push(_dummyCard, _dummyCard);
+jigsawPiece.dealer.hand.push(_dummyCard, _dummyCard);
 
-const dummyLeft = new JigsawPiece(0, 0, [0, 1], 18, 2, 2);
-dummyLeft.player.hand.push(dummyCard, dummyCard);
-dummyLeft.dealer.hand.push(dummyCard, dummyCard);
+const _dummyLeft = new JigsawPiece(0, 0, [0, 1], 18, 2, 2);
+_dummyLeft.player.hand.push(_dummyCard, _dummyCard);
+_dummyLeft.dealer.hand.push(_dummyCard, _dummyCard);
 
-const dummyRight = new JigsawPiece(0, 0, [2, 1], 18, 2, 2);
-dummyRight.player.hand.push(dummyCard, dummyCard);
-dummyRight.dealer.hand.push(dummyCard, dummyCard);
+const _dummyRight = new JigsawPiece(0, 0, [2, 1], 18, 2, 2);
+_dummyRight.player.hand.push(_dummyCard, _dummyCard);
+_dummyRight.dealer.hand.push(_dummyCard, _dummyCard);
 
-const dummyUp = new JigsawPiece(0, 0, [1, 0], 18, 2, 2);
-dummyUp.player.hand.push(dummyCard, dummyCard);
-dummyUp.dealer.hand.push(dummyCard, dummyCard);
+const _dummyUp = new JigsawPiece(0, 0, [1, 0], 18, 2, 2);
+_dummyUp.player.hand.push(_dummyCard, _dummyCard);
+_dummyUp.dealer.hand.push(_dummyCard, _dummyCard);
 
-const dummyDown = new JigsawPiece(0, 0, [1, 2], 18, 2, 2);
-dummyDown.player.hand.push(dummyCard, dummyCard);
-dummyDown.dealer.hand.push(dummyCard, dummyCard);
+const _dummyDown = new JigsawPiece(0, 0, [1, 2], 18, 2, 2);
+_dummyDown.player.hand.push(_dummyCard, _dummyCard);
+_dummyDown.dealer.hand.push(_dummyCard, _dummyCard);
 
-jigsawPiece.compareTo(dummyLeft, "L");
-jigsawPiece.compareTo(dummyDown, "D");
-jigsawPiece.compareTo(dummyRight, "R");
-jigsawPiece.compareTo(dummyUp, "U");
+jigsawPiece.compareTo(_dummyLeft, "L");
+jigsawPiece.compareTo(_dummyDown, "D");
+jigsawPiece.compareTo(_dummyRight, "R");
+jigsawPiece.compareTo(_dummyUp, "U");
 
 function setup () {
 

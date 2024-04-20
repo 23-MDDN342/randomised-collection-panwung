@@ -10,41 +10,91 @@ class Board {
    * @param {number} columns Number of columns on this board.
    * @param {number} edgeLength Edge length of triangle.
    * @param {number} notchDisplacement Notch displacement from edge.
-   * @param {number} notchEdge Size of the notch.
+   * @param {number} notchLength Size of the notch.
+   * @param {number} unplacedChance Percentage chance that a piece is unplaced.
+   * @param {Array<number>} variance Array containing minimum and maximum rotational and positional variation, in the order x y, rot (degrees).
    * @param {number} playerStop Number that the player stops pulling cards at.
    * @param {number} dealerStop Number that the dealer stops pulling cards at.
    */
-  constructor(x, y, rows, columns, edgeLength, notchDisplacement, notchEdge, playerStop=19, dealerStop=17) {
-    this.deck = Card.createDeck();
+  constructor(x, y, rows, columns, edgeLength, notchDisplacement, notchLength, unplacedChance=0, variance=[], playerStop=19, dealerStop=17) {
+    this.deck = Card.createDeck(); // Create deck
+    this.jigsawPieces = [];
+
+    this.x = x;
+    this.y = y;
+    this.rows = rows;
+    this.columns = columns;
 
     this.playerStop = playerStop;
     this.dealerStop = dealerStop;
+    this.edgeLength = edgeLength;
+    this.notchDisplacement = notchDisplacement;
+    this.notchLength = notchLength;
+    this.unplacedChance = unplacedChance;
+    this.variance = variance;
+  }
 
-    // Create new JigsawPiece objects.
+  /**
+   * Creates a new board.
+   */
+  newBoard() {
+    this.createJigsawPieces();
+    board.generateNotches();
+    board.generateFaces();
+  }
+
+  /**
+   * Creates JigsawPiece objects and adds to array.
+   */
+  createJigsawPieces() {
     this.jigsawPieces = [];
     let currentRow;
-    for (let c=0; c<columns; c++) {
+
+    for (let c=0; c<this.columns; c++) {
       currentRow = [];
-      for (let r=0; r<rows; r++) {
+      for (let r=0; r<this.rows; r++) {
+
+        // Random value determining whether a piece will be.
+        let isUnplaced = (this.unplacedChance / 100 > Math.random());
+
+        // Based on whether a piece is unplaced, give it some random variation too all transforms aside from scale.
+        let xVariation = 0;
+        let yVariation = 0;
+        let rotVariation = 0;
+        if (isUnplaced) {
+          xVariation = Math.random() * 2 * this.variance[0] - this.variance[0];
+          yVariation = Math.random() * 2 * this.variance[1] - this.variance[1];
+          rotVariation = Math.random() * 2 * this.variance[2] - this.variance[2];
+        }
+
+        // Create new jigsaw piece.
         let jp = new JigsawPiece(
-          x + r * edgeLength, 
-          y + c * edgeLength, 
+          this.x + r * this.edgeLength, 
+          this.y + c * this.edgeLength, 
           [r, c],
-          edgeLength,
-          notchDisplacement,
-          notchEdge,
+          this.edgeLength,
+          this.notchDisplacement,
+          this.notchLength,
+          isUnplaced,
+          [xVariation, yVariation, rotVariation]
         );
-        this.pullInitialCards(jp, this.deck);
+        
         currentRow.push(jp);
       }
+
+      // Add new piece to array.
       this.jigsawPieces.push(currentRow);
     }
+
+    // Make all jigsaw pieces pull their initial two cards from a deck.
+    this.pullInitialCards(this.deck);
   }
 
-  pullRandom(deck) {
-    return deck[ Math.floor( Math.random() * deck.length ) ];
-  }
-
+  /**
+   * Adds a card to a competitor's hand.
+   * @param {Competitor} competitor Competitor object.
+   * @param {Card} card Card object. 
+   */
   addToHand(competitor, card) {
     competitor.addCardToHand(card);
   }
@@ -57,13 +107,43 @@ class Board {
     return Math.random() < 0.5;
   }
 
-  pullInitialCards(piece, deck) {
-    this.addToHand(piece.player, this.pullRandom(deck));
-    this.addToHand(piece.player, this.pullRandom(deck));
-    this.addToHand(piece.dealer, this.pullRandom(deck));
-    this.addToHand(piece.dealer, this.pullRandom(deck));
+  /**
+   * Pulls a random card from a given array of cards.
+   * @param {Array<Card>} deck Deck of cards.
+   * @returns {Card} A random card from the provided deck.
+   */
+  pullRandom(deck) {
+    return deck[ Math.floor( Math.random() * deck.length ) ];
   }
 
+  /**
+   * Pulls the initial two cards for both the player and the competitor for each JigsawPiece object.
+   * @param {Array<Card>} deck Deck of cards.
+   */
+  pullInitialCards(deck) {
+    for (let c=0; c<this.jigsawPieces.length; c++) {
+      for (let r=0; r<this.jigsawPieces[0].length; r++) {
+
+        // Get the player and dealer.
+        let player = this.jigsawPieces[c][r].player;
+        let dealer = this.jigsawPieces[c][r].dealer;
+
+        // Clear hand
+        player.hand = [];
+        dealer.hand = [];
+
+        // Add a random card to both competitors hand.
+        this.addToHand(player, this.pullRandom(deck));
+        this.addToHand(player, this.pullRandom(deck));
+        this.addToHand(dealer, this.pullRandom(deck));
+        this.addToHand(dealer, this.pullRandom(deck));
+      }
+    }
+  }
+
+  /**
+   * Generates the notches of each JigsawPiece object through comparisons with their neighbouring pieces.
+   */
   generateNotches() {
     for (let c=0; c<this.jigsawPieces.length; c++) {
       for (let r=0; r<this.jigsawPieces[0].length; r++) {
@@ -87,15 +167,10 @@ class Board {
     }
   }
 
-  _calculatePointTransform(point, rotationPoint, rotationTransform, xScale, yScale, mapTo) {
-    let transformedPoint = this._rotatePoint(point, rotationPoint, rotationTransform * Math.PI/180);
-    transformedPoint[0] = map(xScale, 0, 100, transformedPoint[0], mapTo[0]);
-    transformedPoint[1] = map(yScale, 0, 100, transformedPoint[1], mapTo[1]);
-
-    return transformedPoint;
-  }
-
-  compete() {
+  /**
+   * Generates the faces of each JigsawPiece object's player and dealer, through a game of Blackjack. 
+   */
+  generateFaces() {
     for (let c=0; c<this.jigsawPieces.length; c++) {
       for (let r=0; r<this.jigsawPieces[0].length; r++) {
         let jp = this.jigsawPieces[c][r];
@@ -104,7 +179,7 @@ class Board {
 
         // Player and dealer AI 
 
-        // The player, like in actual black jack, can only see the dealer's first card.
+        // The player, like in actual Blackjack, can only see the dealer's first card.
         while (player.score < this.playerStop) {
           // If the player's score is less than 11, it will pull.
           if (player.score < 11) { this.addToHand(player, this.pullRandom(this.deck)); }
@@ -142,7 +217,7 @@ class Board {
           player.gameOutcome = "WIN";
           dealer.gameOutcome = "LOSE";
 
-          // Player blackjack
+          // Player Blackjack
           if (player.score === 21 && player.hand.length === 2) {
             player.gameOutcome = "BLACKJACK";
             dealer.gameOutcome = "BLACKJACKLOSS";
@@ -153,7 +228,7 @@ class Board {
           player.gameOutcome = "LOSE";
           dealer.gameOutcome = "WIN";
 
-          // Dealer blackjack
+          // Dealer Blackjack
           if (dealer.score === 21 && dealer.hand.length === 2) {
             player.gameOutcome = "BLACKJACKLOSS";
             dealer.gameOutcome = "BLACKJACK";
@@ -167,15 +242,31 @@ class Board {
     }
   }
 
-  draw(rotationTransform, xScale, yScale, ...args) {
-    push();
-    angleMode(RADIANS);
+  /**
+   * Draws the JigsawPiece objects.
+   * Must first calculate transformation in x, y, and rotation so that the pieces tile correctly.
+   * @param {number} rotationTransform Amount to rotate the point around the piece's centre, in degrees.
+   * @param {number} xScale Percentage number controlling the x values of each point, scaling it from each JigsawPiece's centre to it's original position. 
+   * @param {number} yScale Percentage number controlling the y values of each point, scaling it from each JigsawPiece's centre to it's original position. 
+   * @param {number} shadowX x offset for rendering the shadow.
+   * @param {number} shadowY y offset for rendering the shadow.
+   */
+  draw(rotationTransform, xScale, yScale, shadowX=0, shadowY=0) {
 
     // Get the first piece.
     let firstPiece = this.jigsawPieces[0][0];
     let edgeLength = firstPiece.edgeLength;
     let firstCenter = [firstPiece.x + edgeLength/2, firstPiece.y + edgeLength/2];
+
+    // Initialize variables for storing adjacent (one to the right, one below) jigsaw pieces.
+    let secondRowPiece;
+    let secondColPiece;
+
+    // These must be initialized outside of the if statements in case there is only 1 row and/or 1 col.
+    let secondRowTopLeftCorner = [0, 0];
+    let secondColTopLeftCorner = [0, 0];
     
+    // --------------------- APPLY TRANSFORMS TO [0, 0] PIECE'S POINTS --------------------- //  
 
     // Apply transforms to the first piece's top right corner.
     let firstTopRightCorner = this._calculatePointTransform(
@@ -191,14 +282,8 @@ class Board {
       xScale, yScale, [firstPiece.x + edgeLength/2, firstPiece.y + edgeLength/2]
     );
     
-    // Initialize variables for storing adjacent (one to the right, one below) jigsaw pieces.
-    let secondRowPiece;
-    let secondColPiece;
+    // --------------------- APPLY TRANSFORMS TO [0, 1] PIECE'S POINT --------------------- //  
 
-    // These must be initialized outside of the if statements in case there is only 1 row and/or 1 col.
-    let secondRowTopLeftCorner = [0, 0];
-    let secondColTopLeftCorner = [0, 0];
-    
     if (this.jigsawPieces[0][1] !== undefined) {
       // Get the piece that comes directly after the first piece in the row.
       secondRowPiece = this.jigsawPieces[0][1]; 
@@ -211,7 +296,9 @@ class Board {
         xScale, yScale, [secondRowPiece.x + edgeLength/2, secondRowPiece.y + edgeLength/2]
       );
     }
-    
+
+    // --------------------- APPLY TRANSFORMS TO [1, 0] PIECE'S POINT --------------------- //  
+
     if (this.jigsawPieces[1] !== undefined) { 
       // Get the piece that comes directly after the first piece in the column. 
       secondColPiece = this.jigsawPieces[1][0];
@@ -226,41 +313,73 @@ class Board {
       );
     }
 
+    // --------------------- CALCULATE TRANSLATION DISTANCES --------------------- // 
+
     // Calculate the amount needed to move subsequent pieces after the first piece to its new correct position;
     let translationXY = [
-      Math.abs(firstTopRightCorner[0] - secondRowTopLeftCorner[0]), // Row transition length x
-      Math.abs(firstTopRightCorner[1] - secondRowTopLeftCorner[1]), // Row transition length y
+      Math.abs(firstTopRightCorner[0] - secondRowTopLeftCorner[0]),   // Row transition length x
+      Math.abs(firstTopRightCorner[1] - secondRowTopLeftCorner[1]),   // Row transition length y
 
       Math.abs(firstBottomLeftCorner[0] - secondColTopLeftCorner[0]), // Column transition length x
       Math.abs(firstBottomLeftCorner[1] - secondColTopLeftCorner[1]), // Column transition length y
     ];
 
-    // Shadow pass
+    // --------------------- RENDEING --------------------- //
+    
+    // Placed layer
+    this._render(translationXY, rotationTransform, xScale, yScale, "shadow", shadowX, shadowY);
+    this._render(translationXY, rotationTransform, xScale, yScale, "object", 0, 0);
+    
+    // Unplaced layer
+    this._render(translationXY, rotationTransform, xScale, yScale, "shadow", shadowX, shadowY, true);
+    this._render(translationXY, rotationTransform, xScale, yScale, "object", 0, 0, true);
+
+  }
+
+  /**
+   * Based on translated 
+   * @param {number} translationXY Translation distance for points.
+   * @param {number} rotationTransform Amount to rotate the point around the piece's centre, in degrees.
+   * @param {number} rotationTransform Amount to rotate the point around the piece's centre, in degrees.
+   * @param {number} xScale Percentage number controlling the x values of each point, scaling it from each JigsawPiece's centre to it's original position. 
+   * @param {number} yScale Percentage number controlling the y values of each point, scaling it from each JigsawPiece's centre to it's original position. 
+   * @param {number} shadowX x offset for rendering the shadow.
+   * @param {number} shadowY y offset for rendering the shadow.
+   * @param {boolean} isUnplacedLayer Boolean which flags whether the current layer being drawn is for placed or unplaced pieces.
+   */
+  _render(translationXY, rotationTransform, xScale, yScale, pass, shadowX, shadowY, isUnplacedLayer=false) {
+    push();
+    angleMode(RADIANS);
+
     for (let c=0; c<this.jigsawPieces.length; c++) {
       for (let r=0; r<this.jigsawPieces[0].length; r++) {
         let jp = this.jigsawPieces[c][r];
-        jp.draw(
-          r * -translationXY[0] - c * translationXY[2], 
-          r * translationXY[1] - c * translationXY[3], 
-          rotationTransform, xScale, yScale, "shadow", ...args
-        );
-        
+        if (!jp.unplaced && !isUnplacedLayer) {
+          jp.draw(
+            r * -translationXY[0] - c * translationXY[2], 
+            r * translationXY[1] - c * translationXY[3], 
+            rotationTransform, xScale, yScale, pass, shadowX, shadowY
+          );
+        }
+        else if (jp.unplaced && isUnplacedLayer) {
+          jp.draw(
+            r * -translationXY[0] - c * translationXY[2], 
+            r * translationXY[1] - c * translationXY[3], 
+            rotationTransform, xScale, yScale, pass, shadowX, shadowY
+          );
+        }
       }
     }
 
-    // Object pass
-    for (let c=0; c<this.jigsawPieces.length; c++) {
-      for (let r=0; r<this.jigsawPieces[0].length; r++) {
-        let jp = this.jigsawPieces[c][r];
-         jp.draw(
-           r * -translationXY[0] - c * translationXY[2], 
-           r * translationXY[1] - c * translationXY[3], 
-           rotationTransform, xScale, yScale, "object", 0, 0
-         );
-        
-      }
-    }
     pop();
+  }
+
+  _calculatePointTransform(point, rotationPoint, rotationTransform, xScale, yScale, mapTo) {
+    let transformedPoint = this._rotatePoint(point, rotationPoint, rotationTransform * Math.PI/180);
+    transformedPoint[0] = map(xScale, 0, 100, transformedPoint[0], mapTo[0]);
+    transformedPoint[1] = map(yScale, 0, 100, transformedPoint[1], mapTo[1]);
+
+    return transformedPoint;
   }
 
   _rotatePoint(point, centre, angle) {
@@ -282,15 +401,27 @@ let curRandomSeed = 0;
 let lastSwapTime = 0;
 const millisPerSwap = 3000;
 
-const ROWS = 3;
-const COLS = 4;
-const EDGE_LENGTH = 110;
-let rot = 0;
-let xScale = 0;
-let yScale = 0;
-const board = new Board(canvasWidth/4, 10, ROWS, COLS, EDGE_LENGTH, 8, 10);
-board.generateNotches();
-board.compete(20);
+const ROWS = 5;
+const COLS = 6;
+const EDGE_LENGTH = 100;
+const ROTATION = 30;
+const SCALE_X = 0;
+const SCALE_Y = 20;
+const NOTCH_DISPLACEMENT = 8;
+const NOTCH_LENGTH = 9;
+const UNPLACED_CHANCE = 0;
+const VARIANCE = [
+  40, // x
+  20, // y
+  180 // rot
+];
+const SHADOW_X = -10;
+const SHADOW_Y = 5;
+
+const board = new Board(canvasWidth * 6/10, canvasHeight/16, ROWS, COLS, EDGE_LENGTH, NOTCH_DISPLACEMENT, NOTCH_LENGTH, UNPLACED_CHANCE, VARIANCE);
+
+board.newBoard();
+
 
 // global variables for colors
 const bg_color1 = [71, 222, 219];
@@ -309,6 +440,7 @@ function setup () {
 function changeRandomSeed() {
   curRandomSeed = curRandomSeed + 1;
   lastSwapTime = millis();
+  board.newBoard();
 }
 
 function mouseClicked() {
@@ -316,9 +448,10 @@ function mouseClicked() {
 }
 
 function draw() {
-  background(255);
+  background(200);
   // drawTable(canvasWidth, canvasHeight);
-  board.draw(rot, xScale, yScale, -10, 10); 
+  board.draw(ROTATION, SCALE_X, SCALE_Y, SHADOW_X, SHADOW_Y); 
+
 }
 
 function drawTable(width, height) {
@@ -363,49 +496,3 @@ function keyTyped() {
     saveBlocksImages(true);
   }
 }
-
-
-// LEGACY
-// function draw () {
-//   if(millis() > lastSwapTime + millisPerSwap) {
-//     changeRandomSeed();
-//   }
-
-//   // reset the random number generator each time draw is called
-//   randomSeed(curRandomSeed);
-
-//   // clear screen
-//   background(bg_color1);
-//   noStroke();
-
-//   // draw a 7x4 grid of faces
-//   let w = canvasWidth / 7;
-//   let h = canvasHeight / 4;
-//   for(let i=0; i<4; i++) {
-//     for(let j=0; j<7; j++) {
-//       let y = h/2 + h*i;
-//       let x = w/2 + w*j;
-     
-//         // center face
-//         let eye_value = int(random(2,4));
-//         let tilt_value = random(-45, 45);
-//         let mouth_value = random(3,4);
-//         let is_cyclops = random(0, 100);
-
-//         if(is_cyclops < 10) {
-//           eye_value = 1;
-//           tilt_value = random(-5, 5);
-//           mouth_value = random(0, 1.7);
-//         }
-
-//         push();
-//         translate(x, y);
-//         scale(w/25, h/25);
-        
-//         orangeAlienFace(tilt_value, eye_value, mouth_value);
-//         pop();
-      
-//     }
-//   }
-// }
-

@@ -42,16 +42,21 @@ class JigsawPiece {
    * @param {Array<number>} gridPos Position on board.
    * @param {number} edgeLength Edge length of triangle.
    * @param {number} notchDisplacement Notch displacement from edge.
-   * @param {number} notchEdge Size of the notch.
+   * @param {number} notchLength Size of the notch.
+   * @param {boolean} unplaced Boolean flagging whether a piece is unplaced or not.
+   * @param {Array<number>} variance Array containing minimum and maximum rotational and positional variation, assuming it is unplaced.
+
    */
-  constructor(x, y, gridPos, edgeLength, notchDisplacement, notchEdge) {
+  constructor(x, y, gridPos, edgeLength, notchDisplacement, notchLength, unplaced=false, variance=[0, 0, 0]) {
     this.x = x;
     this.y = y;
     this.gridPos = gridPos;
+    this.unplaced = unplaced;
+    this.variance = variance;
 
     this.edgeLength = edgeLength;
     this.notchDisplacement = notchDisplacement;
-    this.notchEdge = notchEdge;
+    this.notchLength = notchLength;
 
     this.player = new Competitor(x, y, edgeLength, true);
     this.dealer = new Competitor(x, y, edgeLength, false);
@@ -91,6 +96,7 @@ class JigsawPiece {
           target.rotatePoint(
             mouthMaxDisplacement, 
             mouthCenterRotation, 
+             // Rotation of semi circle based on whether the competitor has won or lost.
             ((target.gameOutcome === "WIN" || target.gameOutcome === "BLACKJACK") ? 1 : -1) * Math.PI * (i/RESOLUTION + 1/(2*RESOLUTION))
           )
         );
@@ -130,6 +136,7 @@ class JigsawPiece {
       );
     }
 
+    // Eyes
     if (target.gameOutcome === "BUST") {
       target.leftEyePoints.push(
         [leftEyeCenterRotation[0] - this.edgeLength/20, leftEyeCenterRotation[1] - this.edgeLength/20],
@@ -150,6 +157,10 @@ class JigsawPiece {
       let leftEyeShape = Math.PI / RESOLUTION;
       let rightEyeShape = Math.PI / RESOLUTION;
 
+      if (target.gameOutcome === "LOSE") {
+        leftEyeShape *= -2/3;
+        rightEyeShape *= 2/3;
+      }
       if ((target.gameOutcome === "BLACKJACKLOSS")) {
         leftEyeShape *= 2/3;
         rightEyeShape *= -2/3
@@ -158,14 +169,13 @@ class JigsawPiece {
         leftEyeShape *= -2/3;
         rightEyeShape *= 2/3
       }
-
-      // Eyes - NEEDS CONDITIONALS
+      
       for (let i=0; i<2*RESOLUTION; i++) {
         target.leftEyePoints.push(
           target.rotatePoint(
             leftEyeMaxDisplacement,
             leftEyeCenterRotation,
-            i * leftEyeShape
+            i * leftEyeShape + ((target.gameOutcome === "LOSE") ? Math.PI : 0)
           )
         );
 
@@ -173,69 +183,248 @@ class JigsawPiece {
           target.rotatePoint(
             rightEyeMaxDisplacement,
             rightEyeCenterRotation,
-            i * rightEyeShape + Math.PI
+            i * rightEyeShape + Math.PI + ((target.gameOutcome === "LOSE") ? Math.PI : 0)
           )
         );
       }
     }
   }
  
-  compareTo(otherPiece, dir) {
+  compareTo(other, dir) {
     let halfLength = this.edgeLength / 2;
+
     switch (dir) {
       case "L":
-        if (otherPiece === undefined) { this.player.points.push([0, this.edgeLength]); }
+        if (other === undefined) { this.player.points.push([0, this.edgeLength]); }
         else {
-          let beatOtherDealer = this.player.hand[0].value > otherPiece.dealer.hand[0].value;
-          this.player.points.push([0, halfLength - this.notchEdge]);
-          this.player.points.push([(beatOtherDealer) ? - this.notchDisplacement : this.notchDisplacement, halfLength]);
-          this.player.points.push([0, halfLength + this.notchEdge]);
+          let beatOtherDealer = this.player.hand[0].value > other.dealer.hand[0].value;
+          this.player.points.push([0, halfLength - this.notchLength]);
+
+          if (beatOtherDealer) {
+            switch (this.player.hand[0].suit) {
+              case "spade":
+                this.player.points.push([-this.notchDisplacement, halfLength]);
+                break;
+              
+              case "heart":
+                this.player.points.push([-this.notchDisplacement, halfLength]);
+                break;
+
+              case "club":
+                this.player.points.push([-this.notchDisplacement, halfLength - this.notchLength]);
+                this.player.points.push([-this.notchDisplacement, halfLength + this.notchLength]);
+                break;
+
+              case "diamond":
+                this.player.points.push([-this.notchDisplacement, halfLength - this.notchLength/2]);
+                this.player.points.push([-this.notchDisplacement, halfLength + this.notchLength/2]);
+                break;
+            }
+          }
+          else {
+            switch (other.dealer.hand[0].suit) {
+              case "spade":
+                this.player.points.push([this.notchDisplacement, halfLength]);
+                break;
+              
+              case "heart":
+                this.player.points.push([this.notchDisplacement, halfLength]);
+                break;
+
+              case "club":
+                this.player.points.push([this.notchDisplacement, halfLength - this.notchLength]);
+                this.player.points.push([this.notchDisplacement, halfLength + this.notchLength]);
+                break;
+
+              case "diamond":
+                this.player.points.push([this.notchDisplacement, halfLength - this.notchLength/2]);
+                this.player.points.push([this.notchDisplacement, halfLength + this.notchLength/2]);
+                break;
+            }
+          }
+
+          this.player.points.push([0, halfLength + this.notchLength]);
           this.player.points.push([0, this.edgeLength]);
         }
         break;
 
       case "D":
-        if (otherPiece === undefined) { this.player.points.push([this.edgeLength, this.edgeLength]); }
+        if (other === undefined) { this.player.points.push([this.edgeLength, this.edgeLength]); }
         else {
-          let beatOtherDealer = this.player.hand[0].value > otherPiece.dealer.hand[0].value;
-          this.player.points.push([halfLength - this.notchEdge, this.edgeLength]);
-          this.player.points.push([halfLength, this.edgeLength + ((beatOtherDealer) ? this.notchDisplacement : - this.notchDisplacement)]); //]
-          this.player.points.push([halfLength + this.notchEdge, this.edgeLength]);
+          let beatOtherDealer = this.player.hand[0].value > other.dealer.hand[0].value;
+          this.player.points.push([halfLength - this.notchLength, this.edgeLength]);
+
+          // this.player.points.push([halfLength, this.edgeLength + this.notchDisplacement]);
+          // this.player.points.push([halfLength, this.edgeLength - this.notchDisplacement]);
+
+          if (beatOtherDealer) {
+            switch (this.player.hand[0].suit) {
+              case "spade":
+                this.player.points.push([halfLength, this.edgeLength + this.notchDisplacement]);
+                break;
+              
+              case "heart":
+                this.player.points.push([halfLength, this.edgeLength + this.notchDisplacement]);
+                break;
+
+              case "club":
+                this.player.points.push([halfLength - this.notchLength, this.edgeLength + this.notchDisplacement]);
+                this.player.points.push([halfLength + this.notchLength, this.edgeLength + this.notchDisplacement]);
+                break;
+
+              case "diamond":
+                this.player.points.push([halfLength - this.notchLength/2, this.edgeLength + this.notchDisplacement]);
+                this.player.points.push([halfLength + this.notchLength/2, this.edgeLength + this.notchDisplacement]);
+                break;
+            }
+          }
+          else {
+            switch (other.dealer.hand[0].suit) {
+              case "spade":
+                this.player.points.push([halfLength, this.edgeLength - this.notchDisplacement]);
+                break;
+              
+              case "heart":
+                this.player.points.push([halfLength, this.edgeLength - this.notchDisplacement]);
+                break;
+
+              case "club":
+                this.player.points.push([halfLength - this.notchLength, this.edgeLength - this.notchDisplacement]);
+                this.player.points.push([halfLength + this.notchLength, this.edgeLength - this.notchDisplacement]);
+                break;
+
+              case "diamond":
+                this.player.points.push([halfLength - this.notchLength/2, this.edgeLength - this.notchDisplacement]);
+                this.player.points.push([halfLength + this.notchLength/2, this.edgeLength - this.notchDisplacement]);
+                break;
+            }
+          }
+          
+
+          this.player.points.push([halfLength + this.notchLength, this.edgeLength]);
+
+
           this.player.points.push([this.edgeLength, this.edgeLength]);
         }
         break;
 
       case "R":
-        if (otherPiece === undefined) { this.dealer.points.push([this.edgeLength, 0]); }
+        if (other === undefined) { this.dealer.points.push([this.edgeLength, 0]); }
         else {
-          let beatOtherPlayer = this.dealer.hand[0].value >= otherPiece.player.hand[0].value;
-          this.dealer.points.push([this.edgeLength, halfLength + this.notchEdge]);
-          this.dealer.points.push([(beatOtherPlayer) ? this.edgeLength + this.notchDisplacement : this.edgeLength - this.notchDisplacement, halfLength]);
-          this.dealer.points.push([this.edgeLength, halfLength - this.notchEdge]);
+          let beatOtherPlayer = this.dealer.hand[0].value >= other.player.hand[0].value;
+          this.dealer.points.push([this.edgeLength, halfLength + this.notchLength]);
+          if (beatOtherPlayer) {
+            switch (this.dealer.hand[0].suit) {
+              case "spade":
+                this.dealer.points.push([this.edgeLength + this.notchDisplacement, halfLength]);
+                break;
+              
+              case "heart":
+                this.dealer.points.push([this.edgeLength + this.notchDisplacement, halfLength]);
+                break;
+
+              case "club":
+                this.dealer.points.push([this.edgeLength + this.notchDisplacement, halfLength + this.notchLength]);
+                this.dealer.points.push([this.edgeLength + this.notchDisplacement, halfLength - this.notchLength]);
+                break;
+
+              case "diamond":
+                this.dealer.points.push([this.edgeLength + this.notchDisplacement, halfLength + this.notchLength/2]);
+                this.dealer.points.push([this.edgeLength + this.notchDisplacement, halfLength - this.notchLength/2]);
+                break;
+            }
+          }
+          else {
+            switch (other.player.hand[0].suit) {
+              case "spade":
+                this.dealer.points.push([this.edgeLength - this.notchDisplacement, halfLength]);
+                break;
+              
+              case "heart":
+                this.dealer.points.push([this.edgeLength - this.notchDisplacement, halfLength]);
+                break;
+
+              case "club":
+                this.dealer.points.push([this.edgeLength - this.notchDisplacement, halfLength + this.notchLength]);
+                this.dealer.points.push([this.edgeLength - this.notchDisplacement, halfLength - this.notchLength]);
+                break;
+
+              case "diamond":
+                this.dealer.points.push([this.edgeLength - this.notchDisplacement, halfLength + this.notchLength/2]);
+                this.dealer.points.push([this.edgeLength - this.notchDisplacement, halfLength - this.notchLength/2]);
+                break;
+            }
+          }
+
+          this.dealer.points.push([this.edgeLength, halfLength - this.notchLength]);
           this.dealer.points.push([this.edgeLength, 0]);
         }
         break;
 
       case "U":
-        if (otherPiece === undefined) { this.dealer.points.push([0, 0]); }
+        if (other === undefined) { this.dealer.points.push([0, 0]); }
         else {
-          let beatOtherPlayer = this.dealer.hand[0].value >= otherPiece.player.hand[0].value;
-          this.dealer.points.push([halfLength + this.notchEdge, 0]);
-          this.dealer.points.push([halfLength, (beatOtherPlayer) ? - this.notchDisplacement : this.notchDisplacement]);
-          this.dealer.points.push([halfLength - this.notchEdge, 0]);
+          let beatOtherPlayer = this.dealer.hand[0].value >= other.player.hand[0].value;
+          this.dealer.points.push([halfLength + this.notchLength, 0]);
+
+          if (beatOtherPlayer) {
+            switch (this.dealer.hand[0].suit) {
+              case "spade":
+                this.dealer.points.push([halfLength, - this.notchDisplacement]);
+                break;
+              
+              case "heart":
+                this.dealer.points.push([halfLength, - this.notchDisplacement]);
+                break;
+
+              case "club":
+                this.dealer.points.push([halfLength + this.notchLength, - this.notchDisplacement]);
+                this.dealer.points.push([halfLength - this.notchLength, - this.notchDisplacement]);
+                break;
+
+              case "diamond":
+                this.dealer.points.push([halfLength + this.notchLength/2, - this.notchDisplacement]);
+                this.dealer.points.push([halfLength - this.notchLength/2, - this.notchDisplacement]);
+                break;
+            }
+          }
+          else {
+            switch (other.player.hand[0].suit) {
+              case "spade":
+                this.dealer.points.push([halfLength, this.notchDisplacement]);
+                break;
+              
+              case "heart":
+                this.dealer.points.push([halfLength, this.notchDisplacement]);
+                break;
+
+              case "club":
+                this.dealer.points.push([halfLength + this.notchLength, this.notchDisplacement]);
+                this.dealer.points.push([halfLength - this.notchLength, this.notchDisplacement]);
+                break;
+
+              case "diamond":
+                this.dealer.points.push([halfLength + this.notchLength/2, this.notchDisplacement]);
+                this.dealer.points.push([halfLength - this.notchLength/2, this.notchDisplacement]);
+                break;
+            }
+          }
+
+          this.dealer.points.push([halfLength - this.notchLength, 0]);
           this.dealer.points.push([0, 0]);
         }
         break;
     }
   }
 
-  draw(xtranslate, ytranslate, rotationTransform, xScale, yScale, pass, ...args) {
+  draw(xtranslate, ytranslate, rotationTransform, xScale, yScale, pass, shadowX, shadowY) {
     push();
-    translate(this.x + xtranslate, this.y + ytranslate);
     angleMode(RADIANS);
+  
+    translate(this.x + xtranslate + this.variance[0], this.y + ytranslate + this.variance[1]);
 
-    this.player.draw(rotationTransform, xScale, yScale, pass, ...args);
-    this.dealer.draw(rotationTransform, xScale, yScale, pass, ...args);
+    this.player.draw(rotationTransform + this.variance[2], xScale, yScale, pass, shadowX, shadowY);
+    this.dealer.draw(rotationTransform + this.variance[2], xScale, yScale, pass, shadowX, shadowY);
     pop();
   }
 }
@@ -247,8 +436,8 @@ class Competitor {
    * @param {number} y y coord of corner of triangle.
    * @param {number} edgeLength Edge length of triangle.
    * @param {number} notchDisplacement Notch displacement from edge.
-   * @param {number} notchEdge Size of the notch.
-   * @param {boolean} isPlayer Determines whether the half piece is a player or dealer.
+   * @param {number} notchLength Size of the notch.
+   * @param {boolean} isPlayer Determines whether the competitor is a player or dealer.
    */
   constructor(x, y, edgeLength, isPlayer) {
     // this.accessories = []; // for later
@@ -297,7 +486,7 @@ class Competitor {
     return [newXPoint, newYPoint];
   }
 
-  draw(rotationTransform, xScale, yScale, pass, ...args) {
+  draw(rotationTransform, xScale, yScale, pass, shadowX, shadowY) {
     let transformedPoint;
     
     push();
@@ -320,7 +509,7 @@ class Competitor {
     beginShape();
     for (let p of this.points) {
       transformedPoint = this._applyTransforms(p, rotationTransform, xScale, yScale);
-      vertex(transformedPoint[0] + ((pass === "shadow") ? args[0] : 0), transformedPoint[1] + ((pass === "shadow") ? args[1] : 0)); 
+      vertex(transformedPoint[0] + ((pass === "shadow") ? shadowX : 0), transformedPoint[1] + ((pass === "shadow") ? shadowY : 0)); 
     }
     endShape(CLOSE);
     
