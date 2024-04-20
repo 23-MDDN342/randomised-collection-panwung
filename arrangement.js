@@ -39,8 +39,8 @@ class Board {
    */
   newBoard() {
     this.createJigsawPieces();
-    board.generateNotches();
-    board.generateFaces();
+    this.generateNotches();
+    this.generateFaces();
   }
 
   /**
