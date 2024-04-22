@@ -419,7 +419,6 @@ const SHADOW_X = -10;
 const SHADOW_Y = 5;
 
 const board = new Board(canvasWidth * 6/10, canvasHeight/16, ROWS, COLS, EDGE_LENGTH, NOTCH_DISPLACEMENT, NOTCH_LENGTH, UNPLACED_CHANCE, VARIANCE);
-
 board.newBoard();
 
 
