@@ -207,7 +207,9 @@ class JigsawPiece {
                 break;
               
               case "heart":
+                this.player.points.push([-this.notchDisplacement * Math.cos(Math.PI/4), halfLength - this.notchDisplacement * Math.sin(Math.PI/4)]);
                 this.player.points.push([-this.notchDisplacement, halfLength]);
+                this.player.points.push([-this.notchDisplacement * Math.cos(Math.PI/4), halfLength + this.notchDisplacement * Math.sin(Math.PI/4)]);
                 break;
 
               case "club":
@@ -228,7 +230,9 @@ class JigsawPiece {
                 break;
               
               case "heart":
+                this.player.points.push([this.notchDisplacement * Math.cos(Math.PI/4), halfLength - this.notchDisplacement * Math.sin(Math.PI/4)]);
                 this.player.points.push([this.notchDisplacement, halfLength]);
+                this.player.points.push([this.notchDisplacement * Math.cos(Math.PI/4), halfLength + this.notchDisplacement * Math.sin(Math.PI/4)]);
                 break;
 
               case "club":
@@ -254,9 +258,6 @@ class JigsawPiece {
           let beatOtherDealer = this.player.hand[0].value > other.dealer.hand[0].value;
           this.player.points.push([halfLength - this.notchLength, this.edgeLength]);
 
-          // this.player.points.push([halfLength, this.edgeLength + this.notchDisplacement]);
-          // this.player.points.push([halfLength, this.edgeLength - this.notchDisplacement]);
-
           if (beatOtherDealer) {
             switch (this.player.hand[0].suit) {
               case "spade":
@@ -264,7 +265,9 @@ class JigsawPiece {
                 break;
               
               case "heart":
+                this.player.points.push([halfLength - this.notchDisplacement * Math.sin(Math.PI/4), this.edgeLength + this.notchDisplacement * Math.cos(Math.PI/4)]);
                 this.player.points.push([halfLength, this.edgeLength + this.notchDisplacement]);
+                this.player.points.push([halfLength + this.notchDisplacement * Math.sin(Math.PI/4), this.edgeLength + this.notchDisplacement * Math.cos(Math.PI/4)]);
                 break;
 
               case "club":
@@ -285,7 +288,9 @@ class JigsawPiece {
                 break;
               
               case "heart":
+                this.player.points.push([halfLength - this.notchDisplacement * Math.sin(Math.PI/4), this.edgeLength - this.notchDisplacement * Math.cos(Math.PI/4)]);
                 this.player.points.push([halfLength, this.edgeLength - this.notchDisplacement]);
+                this.player.points.push([halfLength + this.notchDisplacement * Math.sin(Math.PI/4), this.edgeLength - this.notchDisplacement * Math.cos(Math.PI/4)]);
                 break;
 
               case "club":
@@ -320,7 +325,9 @@ class JigsawPiece {
                 break;
               
               case "heart":
+                this.dealer.points.push([this.edgeLength + this.notchDisplacement * Math.cos(Math.PI/4), halfLength + this.notchDisplacement * Math.sin(Math.PI/4)]);
                 this.dealer.points.push([this.edgeLength + this.notchDisplacement, halfLength]);
+                this.dealer.points.push([this.edgeLength + this.notchDisplacement * Math.cos(Math.PI/4), halfLength - this.notchDisplacement * Math.sin(Math.PI/4)]);
                 break;
 
               case "club":
@@ -341,7 +348,9 @@ class JigsawPiece {
                 break;
               
               case "heart":
+                this.dealer.points.push([this.edgeLength - this.notchDisplacement * Math.cos(Math.PI/4), halfLength + this.notchDisplacement * Math.sin(Math.PI/4)]);
                 this.dealer.points.push([this.edgeLength - this.notchDisplacement, halfLength]);
+                this.dealer.points.push([this.edgeLength - this.notchDisplacement * Math.cos(Math.PI/4), halfLength - this.notchDisplacement * Math.sin(Math.PI/4)]);
                 break;
 
               case "club":
@@ -374,7 +383,10 @@ class JigsawPiece {
                 break;
               
               case "heart":
+                this.dealer.points.push([halfLength + this.notchDisplacement * Math.sin(Math.PI/4), - this.notchDisplacement * Math.cos(Math.PI/4)]);
                 this.dealer.points.push([halfLength, - this.notchDisplacement]);
+                this.dealer.points.push([halfLength - this.notchDisplacement * Math.sin(Math.PI/4), - this.notchDisplacement * Math.cos(Math.PI/4)]);
+
                 break;
 
               case "club":
@@ -395,7 +407,10 @@ class JigsawPiece {
                 break;
               
               case "heart":
+                this.dealer.points.push([halfLength + this.notchDisplacement * Math.sin(Math.PI/4), this.notchDisplacement * Math.cos(Math.PI/4)]);
                 this.dealer.points.push([halfLength, this.notchDisplacement]);
+                this.dealer.points.push([halfLength - this.notchDisplacement * Math.sin(Math.PI/4), this.notchDisplacement * Math.cos(Math.PI/4)]);
+
                 break;
 
               case "club":
