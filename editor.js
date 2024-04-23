@@ -37,6 +37,7 @@ jigsawPiece.compareTo(_dummyDown, "D");
 jigsawPiece.compareTo(_dummyRight, "R");
 jigsawPiece.compareTo(_dummyUp, "U");
 
+
 function setup () {
 
   // create the drawing canvas, save the canvas element
@@ -71,10 +72,11 @@ function setup () {
   faceGuideCheckbox.parent('checkbox1Container');
 
   faceSelector = createSelect();
-  faceSelector.option('1');
-  faceSelector.option('2');
-  faceSelector.option('3');
-  faceSelector.value('1');
+  faceSelector.option('Spade');
+  faceSelector.option('Heart');
+  faceSelector.option('Club');
+  faceSelector.option('Diamond');
+  faceSelector.value('Spade');
   faceSelector.parent('selector1Container');
 }
 
@@ -111,68 +113,150 @@ function draw () {
   scale(face_scale);
 
   push();
-  if (mode == '1') {
-    // Notches
+
+  jigsawPiece.player.points = [[0, 0]];
+  jigsawPiece.dealer.points = [[jigsawPiece.edgeLength, jigsawPiece.edgeLength]];
+  jigsawPiece.player.score = s8;
+  jigsawPiece.dealer.score = s9;
+
+  if (mode == 'Spade') {
+  // Notches
+
+  jigsawPiece.player.hand[0].suit = "spade";
+  jigsawPiece.player.hand[1].suit = "spade";
+  jigsawPiece.dealer.hand[0].suit = "spade";
+  jigsawPiece.dealer.hand[1].suit = "spade";
+
+  jigsawPiece.compareTo(_dummyLeft, "L");
+  jigsawPiece.compareTo(_dummyDown, "D");
+  jigsawPiece.compareTo(_dummyRight, "R");
+  jigsawPiece.compareTo(_dummyUp, "U");
+
+  jigsawPiece.player.points[2][0] = 2 * s4;
+  jigsawPiece.player.points[6][1] = jigsawPiece.edgeLength + 2 * s5;
+  jigsawPiece.dealer.points[2][0] = jigsawPiece.edgeLength + 2 * s6;
+  jigsawPiece.dealer.points[6][1] = 2 * s7;
+  }
+  if (mode == 'Heart') {
+    jigsawPiece.player.hand[0].suit = "heart";
+    jigsawPiece.player.hand[1].suit = "heart";
+    jigsawPiece.dealer.hand[0].suit = "heart";
+    jigsawPiece.dealer.hand[1].suit = "heart";
+
+    jigsawPiece.compareTo(_dummyLeft, "L");
+    jigsawPiece.compareTo(_dummyDown, "D");
+    jigsawPiece.compareTo(_dummyRight, "R");
+    jigsawPiece.compareTo(_dummyUp, "U");
+
+    jigsawPiece.player.points[2][0] = 1.5 * s4;
+    jigsawPiece.player.points[3][0] = 2 * s4;
+    jigsawPiece.player.points[4][0] = 1.5 * s4;
+
+    jigsawPiece.player.points[8][1] = jigsawPiece.edgeLength + 1.5 * s5;
+    jigsawPiece.player.points[9][1] = jigsawPiece.edgeLength + 2 * s5;
+    jigsawPiece.player.points[10][1] = jigsawPiece.edgeLength + 1.5 * s5;
+
+    jigsawPiece.dealer.points[2][0] = jigsawPiece.edgeLength + 1.5 * s6;
+    jigsawPiece.dealer.points[3][0] = jigsawPiece.edgeLength + 2 * s6;
+    jigsawPiece.dealer.points[4][0] = jigsawPiece.edgeLength + 1.5 * s6;
+
+    jigsawPiece.dealer.points[8][1] = 1.5 * s7;
+    jigsawPiece.dealer.points[9][1] = 2 * s7;
+    jigsawPiece.dealer.points[10][1] = 1.5 * s7;
+
+  }
+  if (mode == 'Club') {
+    jigsawPiece.player.hand[0].suit = "club";
+    jigsawPiece.player.hand[1].suit = "club";
+    jigsawPiece.dealer.hand[0].suit = "club";
+    jigsawPiece.dealer.hand[1].suit = "club";
+
+    jigsawPiece.compareTo(_dummyLeft, "L");
+    jigsawPiece.compareTo(_dummyDown, "D");
+    jigsawPiece.compareTo(_dummyRight, "R");
+    jigsawPiece.compareTo(_dummyUp, "U");
+
     jigsawPiece.player.points[2][0] = 2 * s4;
-    jigsawPiece.player.points[6][1] = jigsawPiece.edgeLength + 2 * s5;
+    jigsawPiece.player.points[3][0] = 2 * s4;
+
+    jigsawPiece.player.points[7][1] = jigsawPiece.edgeLength + 2 * s5;
+    jigsawPiece.player.points[8][1] = jigsawPiece.edgeLength + 2 * s5;
+
     jigsawPiece.dealer.points[2][0] = jigsawPiece.edgeLength + 2 * s6;
-    jigsawPiece.dealer.points[6][1] = 2 * s7;
+    jigsawPiece.dealer.points[3][0] = jigsawPiece.edgeLength + 2 * s6;
 
-    jigsawPiece.player.score = s8;
-    jigsawPiece.dealer.score = s9;
+    jigsawPiece.dealer.points[7][1] = 2 * s7;
+    jigsawPiece.dealer.points[8][1] = 2 * s7;
+  }
+  if (mode == 'Diamond') {
+    jigsawPiece.player.hand[0].suit = "diamond";
+    jigsawPiece.player.hand[1].suit = "diamond";
+    jigsawPiece.dealer.hand[0].suit = "diamond";
+    jigsawPiece.dealer.hand[1].suit = "diamond";
 
-    // Player bust
-    if (jigsawPiece.player.score > 21) {
-      jigsawPiece.player.gameOutcome = "BUST";
-      jigsawPiece.dealer.gameOutcome = (jigsawPiece.dealer.score === 21 && jigsawPiece.dealer.hand.length === 2) ? "BLACKJACK" : "WIN";
-    }
-    // Dealer bust
-    else if (jigsawPiece.dealer.score > 21) {
-      jigsawPiece.player.gameOutcome = (jigsawPiece.player.score === 21 && jigsawPiece.player.hand.length === 2) ? "BLACKJACK" : "WIN";
-      jigsawPiece.dealer.gameOutcome = "BUST";
-    }
-    // Push
-    else if (jigsawPiece.player.score === jigsawPiece.dealer.score) {
-      jigsawPiece.player.gameOutcome = "PUSH";
-      jigsawPiece.dealer.gameOutcome = "PUSH";
-    }
-    // Player win
-    else if (jigsawPiece.player.score > jigsawPiece.dealer.score) {
-      jigsawPiece.player.gameOutcome = "WIN";
-      jigsawPiece.dealer.gameOutcome = "LOSE";
+    jigsawPiece.compareTo(_dummyLeft, "L");
+    jigsawPiece.compareTo(_dummyDown, "D");
+    jigsawPiece.compareTo(_dummyRight, "R");
+    jigsawPiece.compareTo(_dummyUp, "U");
 
-      // Player blackjack
-      if (jigsawPiece.player.score === 21 && jigsawPiece.player.hand.length === 2) {
-        jigsawPiece.player.gameOutcome = "BLACKJACK";
-        jigsawPiece.dealer.gameOutcome = "BLACKJACKLOSS";
-      }
-    }
-    // Dealer win
-    else if (jigsawPiece.player.score < jigsawPiece.dealer.score) {
-      jigsawPiece.player.gameOutcome = "LOSE";
-      jigsawPiece.dealer.gameOutcome = "WIN";
+    jigsawPiece.player.points[2][0] = 2 * s4;
+    jigsawPiece.player.points[3][0] = 2 * s4;
 
-      // Dealer blackjack
-      if (jigsawPiece.dealer.score === 21 && jigsawPiece.dealer.hand.length === 2) {
-        jigsawPiece.player.gameOutcome = "BLACKJACKLOSS";
-        jigsawPiece.dealer.gameOutcome = "BLACKJACK";
-      }
-    }
+    jigsawPiece.player.points[7][1] = jigsawPiece.edgeLength + 2 * s5;
+    jigsawPiece.player.points[8][1] = jigsawPiece.edgeLength + 2 * s5;
 
-    jigsawPiece.generateFace("player");
-    jigsawPiece.generateFace("dealer");
+    jigsawPiece.dealer.points[2][0] = jigsawPiece.edgeLength + 2 * s6;
+    jigsawPiece.dealer.points[3][0] = jigsawPiece.edgeLength + 2 * s6;
 
-    jigsawPiece.draw(0, 0, s1, s2, s3, "shadow", -1, 1);
-    jigsawPiece.draw(0, 0, s1, s2, s3, "object", 0, 0);
+    jigsawPiece.dealer.points[7][1] = 2 * s7;
+    jigsawPiece.dealer.points[8][1] = 2 * s7;
   }
 
-  if (mode == '2') {
-     // let slider value 1 indicate thinness
-     blockyFace(s1, s2, s3);
+
+
+  // Player bust
+  if (jigsawPiece.player.score > 21) {
+    jigsawPiece.player.gameOutcome = "BUST";
+    jigsawPiece.dealer.gameOutcome = (jigsawPiece.dealer.score === 21 && jigsawPiece.dealer.hand.length === 2) ? "BLACKJACK" : "WIN";
   }
-  if (mode == '3') {
-    simplePurpleFace();
+  // Dealer bust
+  else if (jigsawPiece.dealer.score > 21) {
+    jigsawPiece.player.gameOutcome = (jigsawPiece.player.score === 21 && jigsawPiece.player.hand.length === 2) ? "BLACKJACK" : "WIN";
+    jigsawPiece.dealer.gameOutcome = "BUST";
   }
+  // Push
+  else if (jigsawPiece.player.score === jigsawPiece.dealer.score) {
+    jigsawPiece.player.gameOutcome = "PUSH";
+    jigsawPiece.dealer.gameOutcome = "PUSH";
+  }
+  // Player win
+  else if (jigsawPiece.player.score > jigsawPiece.dealer.score) {
+    jigsawPiece.player.gameOutcome = "WIN";
+    jigsawPiece.dealer.gameOutcome = "LOSE";
+
+    // Player blackjack
+    if (jigsawPiece.player.score === 21 && jigsawPiece.player.hand.length === 2) {
+      jigsawPiece.player.gameOutcome = "BLACKJACK";
+      jigsawPiece.dealer.gameOutcome = "BLACKJACKLOSS";
+    }
+  }
+  // Dealer win
+  else if (jigsawPiece.player.score < jigsawPiece.dealer.score) {
+    jigsawPiece.player.gameOutcome = "LOSE";
+    jigsawPiece.dealer.gameOutcome = "WIN";
+
+    // Dealer blackjack
+    if (jigsawPiece.dealer.score === 21 && jigsawPiece.dealer.hand.length === 2) {
+      jigsawPiece.player.gameOutcome = "BLACKJACKLOSS";
+      jigsawPiece.dealer.gameOutcome = "BLACKJACK";
+    }
+  }
+
+  jigsawPiece.generateFace("player");
+  jigsawPiece.generateFace("dealer");
+
+  jigsawPiece.draw(0, 0, s1, s2, s3, "shadow", -1, 1);
+  jigsawPiece.draw(0, 0, s1, s2, s3, "object", 0, 0);
 
   pop();
 

@@ -340,7 +340,6 @@ class Board {
    * Based on translated 
    * @param {number} translationXY Translation distance for points.
    * @param {number} rotationTransform Amount to rotate the point around the piece's centre, in degrees.
-   * @param {number} rotationTransform Amount to rotate the point around the piece's centre, in degrees.
    * @param {number} xScale Percentage number controlling the x values of each point, scaling it from each JigsawPiece's centre to it's original position. 
    * @param {number} yScale Percentage number controlling the y values of each point, scaling it from each JigsawPiece's centre to it's original position. 
    * @param {number} shadowX x offset for rendering the shadow.

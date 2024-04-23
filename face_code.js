@@ -190,6 +190,11 @@ class JigsawPiece {
     }
   }
  
+  /**
+   * Compares the competitors of one JigsawPiece object with another to determine notch shape and direction.
+   * @param {JigsawPiece} other The JigsawPiece object to compare to.
+   * @param {string} dir Direction of this other piece.
+   */
   compareTo(other, dir) {
     let halfLength = this.edgeLength / 2;
 
@@ -200,6 +205,8 @@ class JigsawPiece {
           let beatOtherDealer = this.player.hand[0].value > other.dealer.hand[0].value;
           this.player.points.push([0, halfLength - this.notchLength]);
 
+          // --------------------- PLAYER BEAT LEFT DEALER --------------------- // 
+          
           if (beatOtherDealer) {
             switch (this.player.hand[0].suit) {
               case "spade":
@@ -223,6 +230,9 @@ class JigsawPiece {
                 break;
             }
           }
+
+          // --------------------- PLAYER LOST TO LEFT DEALER --------------------- // 
+
           else {
             switch (other.dealer.hand[0].suit) {
               case "spade":
@@ -258,6 +268,8 @@ class JigsawPiece {
           let beatOtherDealer = this.player.hand[0].value > other.dealer.hand[0].value;
           this.player.points.push([halfLength - this.notchLength, this.edgeLength]);
 
+          // --------------------- PLAYER BEAT BOTTOM DEALER --------------------- // 
+
           if (beatOtherDealer) {
             switch (this.player.hand[0].suit) {
               case "spade":
@@ -281,6 +293,9 @@ class JigsawPiece {
                 break;
             }
           }
+
+          // --------------------- PLAYER LOST TO BOTTOM DEALER --------------------- // 
+
           else {
             switch (other.dealer.hand[0].suit) {
               case "spade":
@@ -305,10 +320,7 @@ class JigsawPiece {
             }
           }
           
-
           this.player.points.push([halfLength + this.notchLength, this.edgeLength]);
-
-
           this.player.points.push([this.edgeLength, this.edgeLength]);
         }
         break;
@@ -318,6 +330,9 @@ class JigsawPiece {
         else {
           let beatOtherPlayer = this.dealer.hand[0].value >= other.player.hand[0].value;
           this.dealer.points.push([this.edgeLength, halfLength + this.notchLength]);
+
+          // --------------------- PLAYER BEAT RIGHT DEALER --------------------- // 
+
           if (beatOtherPlayer) {
             switch (this.dealer.hand[0].suit) {
               case "spade":
@@ -341,6 +356,9 @@ class JigsawPiece {
                 break;
             }
           }
+
+          // --------------------- PLAYER LOST TO RIGHT DEALER --------------------- // 
+
           else {
             switch (other.player.hand[0].suit) {
               case "spade":
@@ -376,6 +394,8 @@ class JigsawPiece {
           let beatOtherPlayer = this.dealer.hand[0].value >= other.player.hand[0].value;
           this.dealer.points.push([halfLength + this.notchLength, 0]);
 
+          // --------------------- PLAYER BEAT TOP DEALER --------------------- // 
+
           if (beatOtherPlayer) {
             switch (this.dealer.hand[0].suit) {
               case "spade":
@@ -400,6 +420,9 @@ class JigsawPiece {
                 break;
             }
           }
+
+          // --------------------- PLAYER LOST TO TOP DEALER --------------------- // 
+
           else {
             switch (other.player.hand[0].suit) {
               case "spade":
@@ -592,91 +615,4 @@ class Competitor {
 
     return [newPointX, newPointY];
   }
-}
-
-
-
-
-
-
-/*
- * This file should contain code that draws your faces.
- *
- * Each function takes parameters and draws a face that is within
- * the bounding box (-10, -10) to (10, 10).
- *
- * These functions are used by your final arrangement of faces as well as the face editor.
- */
-
-
-/*
- * tilt_value is in degrees
- * eye_value is an integer number of eyes: either 0, 1, 2, or 3
- * mouth_value is how open the mouth is and should generally range from 0.5 to 10
- */
-function orangeAlienFace(tilt_value, eye_value, mouth_value) {
-  const bg_color3 = [71, 222, 219];
-  const fg_color3 = [255, 93, 35];
-
-  let headSize = 20
-  let eyeSize = 5;
-  let centerX = 0;
-  let Iy = -4
-  let distactBetweenEyes = 5
-  let MouthDrop = 7
-  
-  // rotation in degrees
-  angleMode(DEGREES);
-  rotate(tilt_value);
-
- // head
-  noStroke();
-  fill(fg_color3);
-  ellipse(centerX, 0, headSize, headSize);
-
-  // 2 traditonal eyes
-  if (eye_value === 1 || eye_value == 3) {
-    fill(bg_color3);
-    ellipse(centerX, Iy, eyeSize-1,eyeSize);
-   
-  }
-// middle eye
-  if (eye_value >= 2) {
-    fill(bg_color3);
-    ellipse(centerX - distactBetweenEyes, Iy, eyeSize);
-    ellipse(centerX + distactBetweenEyes, Iy, eyeSize );
-  }
-
-  // mouth
-  fill(bg_color3);
-  ellipse(centerX, Iy + MouthDrop, distactBetweenEyes, mouth_value);
-}
-
-
-function simplePurpleFace() {
-  fill(234, 122, 244);
-  noStroke();
-  // head
-  ellipse(0, 0, 20);
-  // eyes
-  fill(255, 217, 114);
-  ellipse(-3, -3, 3);
-  ellipse( 3, -3, 3);
-}
-
-/*
- * thinness_value ranges from 0-100 and indicates how thin the face is
- */
-function blockyFace(thinness_value) {
-  // head
-  noStroke();
-  fill(134, 19, 136);
-  let head_width = map(thinness_value, 0, 100, 8, 20);
-  rect(-head_width/2, -9, head_width, 18);
- 
-
-  // eyes
-  fill(234, 122, 244);
-  ellipse(-2, -4, 1);
-  ellipse( 2, -4, 1);
 }

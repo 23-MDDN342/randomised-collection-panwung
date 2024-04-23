@@ -33,4 +33,4 @@ Added new eye expression for "LOSE", which occurs whenever a competitor has lost
 Began working on different notches based on the suit of the competitors first card. So far "spade", "club", and "diamond" have unique notches; point, square, and trapezoid respectivly. I have also begun working on the arrangement of the pieces. The scattering has also returned, allowing for a percentage chance of a piece being "unplaced" as opposed to in place. 
 
 23/4
-Made the last notch shape for "heart" suit, a semi rounded notch (I couldn't be bothered making it a complete circle).
+Made the last notch shape for "heart" suit, a semi rounded notch (I couldn't be bothered making it a complete circle). I have also made it so the editor now can display these alternate notches.
