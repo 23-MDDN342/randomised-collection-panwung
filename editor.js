@@ -119,24 +119,30 @@ function draw () {
   jigsawPiece.player.score = s8;
   jigsawPiece.dealer.score = s9;
 
-  if (mode == 'Diamond') {
-  // Notches
+  if (mode == 'Spade') {
+    jigsawPiece.player.hand[0].suit = "spade";
+    jigsawPiece.player.hand[1].suit = "spade";
+    jigsawPiece.dealer.hand[0].suit = "spade";
+    jigsawPiece.dealer.hand[1].suit = "spade";
 
-  jigsawPiece.player.hand[0].suit = "diamond";
-  jigsawPiece.player.hand[1].suit = "diamond";
-  jigsawPiece.dealer.hand[0].suit = "diamond";
-  jigsawPiece.dealer.hand[1].suit = "diamond";
+    jigsawPiece.compareTo(_dummyLeft, "L");
+    jigsawPiece.compareTo(_dummyDown, "D");
+    jigsawPiece.compareTo(_dummyRight, "R");
+    jigsawPiece.compareTo(_dummyUp, "U");
 
-  jigsawPiece.compareTo(_dummyLeft, "L");
-  jigsawPiece.compareTo(_dummyDown, "D");
-  jigsawPiece.compareTo(_dummyRight, "R");
-  jigsawPiece.compareTo(_dummyUp, "U");
+    jigsawPiece.player.points[2][0] = 2 * s4;
+    jigsawPiece.player.points[3][0] = 2 * s4;
 
-  jigsawPiece.player.points[2][0] = 2 * s4;
-  jigsawPiece.player.points[6][1] = jigsawPiece.edgeLength + 2 * s5;
-  jigsawPiece.dealer.points[2][0] = jigsawPiece.edgeLength + 2 * s6;
-  jigsawPiece.dealer.points[6][1] = 2 * s7;
+    jigsawPiece.player.points[7][1] = jigsawPiece.edgeLength + 2 * s5;
+    jigsawPiece.player.points[8][1] = jigsawPiece.edgeLength + 2 * s5;
+
+    jigsawPiece.dealer.points[2][0] = jigsawPiece.edgeLength + 2 * s6;
+    jigsawPiece.dealer.points[3][0] = jigsawPiece.edgeLength + 2 * s6;
+
+    jigsawPiece.dealer.points[7][1] = 2 * s7;
+    jigsawPiece.dealer.points[8][1] = 2 * s7;
   }
+
   if (mode == 'Heart') {
     jigsawPiece.player.hand[0].suit = "heart";
     jigsawPiece.player.hand[1].suit = "heart";
@@ -188,31 +194,23 @@ function draw () {
     jigsawPiece.dealer.points[7][1] = 2 * s7;
     jigsawPiece.dealer.points[8][1] = 2 * s7;
   }
-  if (mode == 'Spade') {
-    jigsawPiece.player.hand[0].suit = "spade";
-    jigsawPiece.player.hand[1].suit = "spade";
-    jigsawPiece.dealer.hand[0].suit = "spade";
-    jigsawPiece.dealer.hand[1].suit = "spade";
-
+  if (mode == 'Diamond') {
+    // Notches
+    jigsawPiece.player.hand[0].suit = "diamond";
+    jigsawPiece.player.hand[1].suit = "diamond";
+    jigsawPiece.dealer.hand[0].suit = "diamond";
+    jigsawPiece.dealer.hand[1].suit = "diamond";
+  
     jigsawPiece.compareTo(_dummyLeft, "L");
     jigsawPiece.compareTo(_dummyDown, "D");
     jigsawPiece.compareTo(_dummyRight, "R");
     jigsawPiece.compareTo(_dummyUp, "U");
-
+  
     jigsawPiece.player.points[2][0] = 2 * s4;
-    jigsawPiece.player.points[3][0] = 2 * s4;
-
-    jigsawPiece.player.points[7][1] = jigsawPiece.edgeLength + 2 * s5;
-    jigsawPiece.player.points[8][1] = jigsawPiece.edgeLength + 2 * s5;
-
+    jigsawPiece.player.points[6][1] = jigsawPiece.edgeLength + 2 * s5;
     jigsawPiece.dealer.points[2][0] = jigsawPiece.edgeLength + 2 * s6;
-    jigsawPiece.dealer.points[3][0] = jigsawPiece.edgeLength + 2 * s6;
-
-    jigsawPiece.dealer.points[7][1] = 2 * s7;
-    jigsawPiece.dealer.points[8][1] = 2 * s7;
+    jigsawPiece.dealer.points[6][1] = 2 * s7;
   }
-
-
 
   // Player bust
   if (jigsawPiece.player.score > 21) {
