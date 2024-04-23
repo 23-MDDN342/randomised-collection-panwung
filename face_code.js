@@ -206,11 +206,12 @@ class JigsawPiece {
           this.player.points.push([0, halfLength - this.notchLength]);
 
           // --------------------- PLAYER BEAT LEFT DEALER --------------------- // 
-          
+
           if (beatOtherDealer) {
             switch (this.player.hand[0].suit) {
               case "spade":
-                this.player.points.push([-this.notchDisplacement, halfLength]);
+                this.player.points.push([-this.notchDisplacement, halfLength - this.notchLength/2]);
+                this.player.points.push([-this.notchDisplacement, halfLength + this.notchLength/2]);
                 break;
               
               case "heart":
@@ -225,8 +226,7 @@ class JigsawPiece {
                 break;
 
               case "diamond":
-                this.player.points.push([-this.notchDisplacement, halfLength - this.notchLength/2]);
-                this.player.points.push([-this.notchDisplacement, halfLength + this.notchLength/2]);
+                this.player.points.push([-this.notchDisplacement, halfLength]);
                 break;
             }
           }
@@ -236,9 +236,10 @@ class JigsawPiece {
           else {
             switch (other.dealer.hand[0].suit) {
               case "spade":
-                this.player.points.push([this.notchDisplacement, halfLength]);
+                this.player.points.push([this.notchDisplacement, halfLength - this.notchLength/2]);
+                this.player.points.push([this.notchDisplacement, halfLength + this.notchLength/2]);
                 break;
-              
+
               case "heart":
                 this.player.points.push([this.notchDisplacement * Math.cos(Math.PI/4), halfLength - this.notchDisplacement * Math.sin(Math.PI/4)]);
                 this.player.points.push([this.notchDisplacement, halfLength]);
@@ -251,8 +252,7 @@ class JigsawPiece {
                 break;
 
               case "diamond":
-                this.player.points.push([this.notchDisplacement, halfLength - this.notchLength/2]);
-                this.player.points.push([this.notchDisplacement, halfLength + this.notchLength/2]);
+                this.player.points.push([this.notchDisplacement, halfLength]);
                 break;
             }
           }
@@ -273,7 +273,8 @@ class JigsawPiece {
           if (beatOtherDealer) {
             switch (this.player.hand[0].suit) {
               case "spade":
-                this.player.points.push([halfLength, this.edgeLength + this.notchDisplacement]);
+                this.player.points.push([halfLength - this.notchLength/2, this.edgeLength + this.notchDisplacement]);
+                this.player.points.push([halfLength + this.notchLength/2, this.edgeLength + this.notchDisplacement]);
                 break;
               
               case "heart":
@@ -288,8 +289,7 @@ class JigsawPiece {
                 break;
 
               case "diamond":
-                this.player.points.push([halfLength - this.notchLength/2, this.edgeLength + this.notchDisplacement]);
-                this.player.points.push([halfLength + this.notchLength/2, this.edgeLength + this.notchDisplacement]);
+                this.player.points.push([halfLength, this.edgeLength + this.notchDisplacement]);
                 break;
             }
           }
@@ -299,7 +299,8 @@ class JigsawPiece {
           else {
             switch (other.dealer.hand[0].suit) {
               case "spade":
-                this.player.points.push([halfLength, this.edgeLength - this.notchDisplacement]);
+                this.player.points.push([halfLength - this.notchLength/2, this.edgeLength - this.notchDisplacement]);
+                this.player.points.push([halfLength + this.notchLength/2, this.edgeLength - this.notchDisplacement]);
                 break;
               
               case "heart":
@@ -314,8 +315,7 @@ class JigsawPiece {
                 break;
 
               case "diamond":
-                this.player.points.push([halfLength - this.notchLength/2, this.edgeLength - this.notchDisplacement]);
-                this.player.points.push([halfLength + this.notchLength/2, this.edgeLength - this.notchDisplacement]);
+                this.player.points.push([halfLength, this.edgeLength - this.notchDisplacement]);
                 break;
             }
           }
@@ -336,7 +336,8 @@ class JigsawPiece {
           if (beatOtherPlayer) {
             switch (this.dealer.hand[0].suit) {
               case "spade":
-                this.dealer.points.push([this.edgeLength + this.notchDisplacement, halfLength]);
+                this.dealer.points.push([this.edgeLength + this.notchDisplacement, halfLength + this.notchLength/2]);
+                this.dealer.points.push([this.edgeLength + this.notchDisplacement, halfLength - this.notchLength/2]);
                 break;
               
               case "heart":
@@ -351,8 +352,7 @@ class JigsawPiece {
                 break;
 
               case "diamond":
-                this.dealer.points.push([this.edgeLength + this.notchDisplacement, halfLength + this.notchLength/2]);
-                this.dealer.points.push([this.edgeLength + this.notchDisplacement, halfLength - this.notchLength/2]);
+                this.dealer.points.push([this.edgeLength + this.notchDisplacement, halfLength]);
                 break;
             }
           }
@@ -362,7 +362,8 @@ class JigsawPiece {
           else {
             switch (other.player.hand[0].suit) {
               case "spade":
-                this.dealer.points.push([this.edgeLength - this.notchDisplacement, halfLength]);
+                this.dealer.points.push([this.edgeLength - this.notchDisplacement, halfLength + this.notchLength/2]);
+                this.dealer.points.push([this.edgeLength - this.notchDisplacement, halfLength - this.notchLength/2]);
                 break;
               
               case "heart":
@@ -377,8 +378,7 @@ class JigsawPiece {
                 break;
 
               case "diamond":
-                this.dealer.points.push([this.edgeLength - this.notchDisplacement, halfLength + this.notchLength/2]);
-                this.dealer.points.push([this.edgeLength - this.notchDisplacement, halfLength - this.notchLength/2]);
+                this.dealer.points.push([this.edgeLength - this.notchDisplacement, halfLength]);
                 break;
             }
           }
@@ -399,7 +399,8 @@ class JigsawPiece {
           if (beatOtherPlayer) {
             switch (this.dealer.hand[0].suit) {
               case "spade":
-                this.dealer.points.push([halfLength, - this.notchDisplacement]);
+                this.dealer.points.push([halfLength + this.notchLength/2, - this.notchDisplacement]);
+                this.dealer.points.push([halfLength - this.notchLength/2, - this.notchDisplacement]);
                 break;
               
               case "heart":
@@ -415,8 +416,7 @@ class JigsawPiece {
                 break;
 
               case "diamond":
-                this.dealer.points.push([halfLength + this.notchLength/2, - this.notchDisplacement]);
-                this.dealer.points.push([halfLength - this.notchLength/2, - this.notchDisplacement]);
+                this.dealer.points.push([halfLength, - this.notchDisplacement]);
                 break;
             }
           }
@@ -426,7 +426,8 @@ class JigsawPiece {
           else {
             switch (other.player.hand[0].suit) {
               case "spade":
-                this.dealer.points.push([halfLength, this.notchDisplacement]);
+                this.dealer.points.push([halfLength + this.notchLength/2, this.notchDisplacement]);
+                this.dealer.points.push([halfLength - this.notchLength/2, this.notchDisplacement]);
                 break;
               
               case "heart":
@@ -442,8 +443,7 @@ class JigsawPiece {
                 break;
 
               case "diamond":
-                this.dealer.points.push([halfLength + this.notchLength/2, this.notchDisplacement]);
-                this.dealer.points.push([halfLength - this.notchLength/2, this.notchDisplacement]);
+                this.dealer.points.push([halfLength, this.notchDisplacement]);
                 break;
             }
           }

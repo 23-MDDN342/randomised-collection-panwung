@@ -76,7 +76,7 @@ function setup () {
   faceSelector.option('Heart');
   faceSelector.option('Club');
   faceSelector.option('Diamond');
-  faceSelector.value('Spade');
+  faceSelector.value('Diamond');
   faceSelector.parent('selector1Container');
 }
 
@@ -119,13 +119,13 @@ function draw () {
   jigsawPiece.player.score = s8;
   jigsawPiece.dealer.score = s9;
 
-  if (mode == 'Spade') {
+  if (mode == 'Diamond') {
   // Notches
 
-  jigsawPiece.player.hand[0].suit = "spade";
-  jigsawPiece.player.hand[1].suit = "spade";
-  jigsawPiece.dealer.hand[0].suit = "spade";
-  jigsawPiece.dealer.hand[1].suit = "spade";
+  jigsawPiece.player.hand[0].suit = "diamond";
+  jigsawPiece.player.hand[1].suit = "diamond";
+  jigsawPiece.dealer.hand[0].suit = "diamond";
+  jigsawPiece.dealer.hand[1].suit = "diamond";
 
   jigsawPiece.compareTo(_dummyLeft, "L");
   jigsawPiece.compareTo(_dummyDown, "D");
@@ -188,11 +188,11 @@ function draw () {
     jigsawPiece.dealer.points[7][1] = 2 * s7;
     jigsawPiece.dealer.points[8][1] = 2 * s7;
   }
-  if (mode == 'Diamond') {
-    jigsawPiece.player.hand[0].suit = "diamond";
-    jigsawPiece.player.hand[1].suit = "diamond";
-    jigsawPiece.dealer.hand[0].suit = "diamond";
-    jigsawPiece.dealer.hand[1].suit = "diamond";
+  if (mode == 'Spade') {
+    jigsawPiece.player.hand[0].suit = "spade";
+    jigsawPiece.player.hand[1].suit = "spade";
+    jigsawPiece.dealer.hand[0].suit = "spade";
+    jigsawPiece.dealer.hand[1].suit = "spade";
 
     jigsawPiece.compareTo(_dummyLeft, "L");
     jigsawPiece.compareTo(_dummyDown, "D");
