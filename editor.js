@@ -76,7 +76,7 @@ function setup () {
   faceSelector.option('Heart');
   faceSelector.option('Club');
   faceSelector.option('Diamond');
-  faceSelector.value('Diamond');
+  faceSelector.value('Spade');
   faceSelector.parent('selector1Container');
 }
 
