@@ -409,7 +409,7 @@ const SCALE_X = 0;
 const SCALE_Y = 20;
 const NOTCH_DISPLACEMENT = 8;
 const NOTCH_LENGTH = 9;
-const UNPLACED_CHANCE = 0;
+const UNPLACED_CHANCE = 30;
 const VARIANCE = [
   40, // x
   20, // y
