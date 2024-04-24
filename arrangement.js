@@ -269,14 +269,14 @@ class Board {
     // --------------------- APPLY TRANSFORMS TO [0, 0] PIECE'S POINTS --------------------- //  
 
     // Apply transforms to the first piece's top right corner.
-    let firstTopRightCorner = this._calculatePointTransform(
+    let firstTopRightCorner = this.calculatePointTransform(
       [firstPiece.x + edgeLength, firstPiece.y], 
       firstCenter, rotationTransform, 
       xScale, yScale, [firstPiece.x + edgeLength/2, firstPiece.y + edgeLength/2]
     );
 
     // Apply transforms to the first piece's bottom left corner.
-    let firstBottomLeftCorner = this._calculatePointTransform(
+    let firstBottomLeftCorner = this.calculatePointTransform(
       [firstPiece.x, firstPiece.y + edgeLength], 
       firstCenter, rotationTransform, 
       xScale, yScale, [firstPiece.x + edgeLength/2, firstPiece.y + edgeLength/2]
@@ -290,7 +290,7 @@ class Board {
 
       // Apply transforms to the second piece's top right corner.
       let secondCenter = [secondRowPiece.x + edgeLength/2, secondRowPiece.y + edgeLength/2];
-      secondRowTopLeftCorner = this._calculatePointTransform(
+      secondRowTopLeftCorner = this.calculatePointTransform(
         [secondRowPiece.x, secondRowPiece.y], 
         secondCenter, rotationTransform, 
         xScale, yScale, [secondRowPiece.x + edgeLength/2, secondRowPiece.y + edgeLength/2]
@@ -306,7 +306,7 @@ class Board {
       // Apply transforms to the second piece's top right corner.
       let secondCenter = [secondColPiece.x + edgeLength/2, secondColPiece.y + edgeLength/2];
 
-      secondColTopLeftCorner = this._calculatePointTransform(
+      secondColTopLeftCorner = this.calculatePointTransform(
         [secondColPiece.x, secondColPiece.y], 
         secondCenter, rotationTransform, 
         xScale, yScale, [secondColPiece.x + edgeLength/2, secondColPiece.y + edgeLength/2]
@@ -333,11 +333,10 @@ class Board {
     // Unplaced layer
     this._render(translationXY, rotationTransform, xScale, yScale, "shadow", shadowX, shadowY, true);
     this._render(translationXY, rotationTransform, xScale, yScale, "object", 0, 0, true);
-
   }
 
   /**
-   * Based on translated 
+   * Based on translated, draw.
    * @param {number} translationXY Translation distance for points.
    * @param {number} rotationTransform Amount to rotate the point around the piece's centre, in degrees.
    * @param {number} xScale Percentage number controlling the x values of each point, scaling it from each JigsawPiece's centre to it's original position. 
@@ -373,7 +372,17 @@ class Board {
     pop();
   }
 
-  _calculatePointTransform(point, rotationPoint, rotationTransform, xScale, yScale, mapTo) {
+  /**
+   * Private method for calculating point transforms.
+   * @param {Array<number>} point 
+   * @param {Array<number>} rotationPoint Point to rotate around.
+   * @param {number} rotationTransform Amount to rotate the point around the piece's centre, in degrees.
+   * @param {number} xScale Percentage number controlling the x values of each point, scaling it from each JigsawPiece's centre to it's original position. 
+   * @param {number} yScale Percentage number controlling the y values of each point, scaling it from each JigsawPiece's centre to it's original position. 
+   * @param {Array<number>} mapTo Max x and y distance to map to.
+   * @returns {Array<number>} Transformed point.
+   */
+  calculatePointTransform(point, rotationPoint, rotationTransform, xScale, yScale, mapTo) {
     let transformedPoint = this._rotatePoint(point, rotationPoint, rotationTransform * Math.PI/180);
     transformedPoint[0] = map(xScale, 0, 100, transformedPoint[0], mapTo[0]);
     transformedPoint[1] = map(yScale, 0, 100, transformedPoint[1], mapTo[1]);
@@ -381,14 +390,20 @@ class Board {
     return transformedPoint;
   }
 
-  _rotatePoint(point, centre, angle) {
-    let newPointX = (point[0] - centre[0]) * Math.cos(angle) - (point[1] - centre[1]) * Math.sin(angle) + centre[0];
-    let newPointY = (point[0] - centre[0]) * Math.sin(angle) + (point[1] - centre[1]) * Math.cos(angle) + centre[1];
+  /**
+   * Private method for rotating a point around some centre point.
+   * @param {Array<number>} point Point to rotate.
+   * @param {Array<number>} center Point to rotate around.
+   * @param {number} angle Angle to rotate around centre, in radians.
+   * @returns {Array<number>} Rotated point.
+   */
+  _rotatePoint(point, center, angle) {
+    let newPointX = (point[0] - center[0]) * Math.cos(angle) - (point[1] - center[1]) * Math.sin(angle) + center[0];
+    let newPointY = (point[0] - center[0]) * Math.sin(angle) + (point[1] - center[1]) * Math.cos(angle) + center[1];
 
     return [newPointX, newPointY];
   }
 }
-
 
 /*
  * This program draws your arrangement of faces on the canvas.
@@ -408,18 +423,17 @@ const SCALE_X = 0;
 const SCALE_Y = 20;
 const NOTCH_DISPLACEMENT = 8;
 const NOTCH_LENGTH = 9;
-const UNPLACED_CHANCE = 30;
+const UNPLACED_CHANCE = 40;
 const VARIANCE = [
   40, // x
   20, // y
   180 // rot
 ];
-const SHADOW_X = -10;
+const SHADOW_X = 10;
 const SHADOW_Y = 5;
 
 const board = new Board(canvasWidth * 6/10, canvasHeight/16, ROWS, COLS, EDGE_LENGTH, NOTCH_DISPLACEMENT, NOTCH_LENGTH, UNPLACED_CHANCE, VARIANCE);
 board.newBoard();
-
 
 // global variables for colors
 const bg_color1 = [71, 222, 219];
@@ -445,45 +459,91 @@ function mouseClicked() {
   changeRandomSeed();
 }
 
+
 function draw() {
-  background(200);
-  // drawTable(canvasWidth, canvasHeight);
+  drawTable(canvasWidth, canvasHeight, ROTATION, SCALE_X, SCALE_Y);
   board.draw(ROTATION, SCALE_X, SCALE_Y, SHADOW_X, SHADOW_Y); 
-
 }
 
-function drawTable(width, height) {
+function drawTable(width, height, angle, xScale, yScale) {
+  let topPoint = [width/2, - 300];
+  let botPoint = [width/2, height + 300];
+  
+  let transformedTop = board.calculatePointTransform(topPoint, [width/2, height/2], angle, xScale, yScale, [width/2, height/2]);
+  let transformedBot = board.calculatePointTransform(botPoint, [width/2, height/2], angle, xScale, yScale, [width/2, height/2]);
+
+  // The table colour
   push();
+  background([96, 124, 68]);
   
-  strokeWeight(3);
-  stroke(0);
-  fill([50, 30, 15]);
-  rect(width * 2/3, 0, width, height);
-
-  fill([30, 20, 10]);
+  // Table darker green
   noStroke();
-  triangle(
-    width * 2/3, 0,
-    width * 2/3, height,
-    width, height
-  );
+  fill([41, 58, 24]);
+  beginShape();
+  vertex(-2, 0);
+  vertex(transformedTop[0], transformedTop[1]);
+  vertex(transformedBot[0], transformedBot[1]);
+  vertex(-2, height);
+  endShape(CLOSE);
 
-  pop();
+  // Line
+  noFill();
+  stroke(220);
+  strokeWeight(width/80); 
+  line(transformedTop[0], transformedTop[1], transformedBot[0], transformedBot[1]);
 
-  push();
-  
+  // Darkness
   noStroke();
-  fill([164, 116, 36]);
-  rect(0, 0, width * 2/3, height);
-  
-  strokeWeight(10);
-  strokeCap(SQUARE);
-  stroke([96, 59, 42]);
+  fill([40, 40, 40, 127]);
+  beginShape();
+  vertex(0, 0);
+  vertex(width * 4/5, height);
+  vertex(0, height);
+  endShape(CLOSE);
 
-  line(width * 2/3, 0, width * 2/3, height);
+  beginShape();
+  vertex(0, 0);
+  vertex(width, 0);
+  vertex(width, height/2);
+  endShape(CLOSE);
+
+
 
   pop();
 }
+
+// function drawTable(width, height) {
+//   push();
+  
+//   strokeWeight(3);
+//   stroke(0);
+//   fill([50, 30, 15]);
+//   rect(width * 2/3, 0, width, height);
+
+//   fill([30, 20, 10]);
+//   noStroke();
+//   triangle(
+//     width * 2/3, 0,
+//     width * 2/3, height,
+//     width, height
+//   );
+
+//   pop();
+
+//   push();
+  
+//   noStroke();
+//   fill([164, 116, 36]);
+//   rect(0, 0, width * 2/3, height);
+  
+//   strokeWeight(10);
+//   strokeCap(SQUARE);
+//   stroke([96, 59, 42]);
+
+//   line(width * 2/3, 0, width * 2/3, height);
+
+//   pop();
+// }
 
 
 function keyTyped() {

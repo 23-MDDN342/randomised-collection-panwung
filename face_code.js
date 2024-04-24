@@ -533,7 +533,7 @@ class Competitor {
 
     // Colours
     if (pass === "shadow") {
-      fill([80, 80, 80, 127]);
+      fill([30, 30, 30, 127]);
       noStroke();
     }
     else {

@@ -34,3 +34,6 @@ Began working on different notches based on the suit of the competitors first ca
 
 23/4
 Made the last notch shape for "heart" suit, a semi rounded notch (I couldn't be bothered making it a complete circle). I have also made it so the editor now can display these alternate notches.
+
+24/04
+Began working on the table. Only some simple colours exist so far. Later on I will add a box for the puzzle pieces, or maybe a deck of cards. I want to try to make a gradient across the table. I plan on making accessories for each face if they have a king, queen, jack, or ace in their hand.
