@@ -177,7 +177,7 @@ class Board {
         let player = jp.player;
         let dealer = jp.dealer;
 
-        // Player and dealer AI 
+        // --------------------- PLAYER AND DEALER AI --------------------- //  
 
         // The player, like in actual Blackjack, can only see the dealer's first card.
         while (player.score < this.playerStop) {
@@ -196,6 +196,8 @@ class Board {
         while (dealer.score < this.dealerStop && player.score < 22) {
           this.addToHand(dealer, this.pullRandom(this.deck));
         }
+
+        // --------------------- WIN/LOSE LOGIC --------------------- //  
 
         // Player bust
         if (player.score > 21) {
@@ -272,14 +274,14 @@ class Board {
     let firstTopRightCorner = this.calculatePointTransform(
       [firstPiece.x + edgeLength, firstPiece.y], 
       firstCenter, rotationTransform, 
-      xScale, yScale, [firstPiece.x + edgeLength/2, firstPiece.y + edgeLength/2]
+      xScale, yScale
     );
 
     // Apply transforms to the first piece's bottom left corner.
     let firstBottomLeftCorner = this.calculatePointTransform(
       [firstPiece.x, firstPiece.y + edgeLength], 
       firstCenter, rotationTransform, 
-      xScale, yScale, [firstPiece.x + edgeLength/2, firstPiece.y + edgeLength/2]
+      xScale, yScale
     );
     
     // --------------------- APPLY TRANSFORMS TO [0, 1] PIECE'S POINT --------------------- //  
@@ -293,7 +295,7 @@ class Board {
       secondRowTopLeftCorner = this.calculatePointTransform(
         [secondRowPiece.x, secondRowPiece.y], 
         secondCenter, rotationTransform, 
-        xScale, yScale, [secondRowPiece.x + edgeLength/2, secondRowPiece.y + edgeLength/2]
+        xScale, yScale
       );
     }
 
@@ -309,7 +311,7 @@ class Board {
       secondColTopLeftCorner = this.calculatePointTransform(
         [secondColPiece.x, secondColPiece.y], 
         secondCenter, rotationTransform, 
-        xScale, yScale, [secondColPiece.x + edgeLength/2, secondColPiece.y + edgeLength/2]
+        xScale, yScale
       );
     }
 
@@ -373,19 +375,18 @@ class Board {
   }
 
   /**
-   * Private method for calculating point transforms.
+   * Method for calculating point transforms.
    * @param {Array<number>} point 
-   * @param {Array<number>} rotationPoint Point to rotate around.
+   * @param {Array<number>} center Point to transform around.
    * @param {number} rotationTransform Amount to rotate the point around the piece's centre, in degrees.
    * @param {number} xScale Percentage number controlling the x values of each point, scaling it from each JigsawPiece's centre to it's original position. 
    * @param {number} yScale Percentage number controlling the y values of each point, scaling it from each JigsawPiece's centre to it's original position. 
-   * @param {Array<number>} mapTo Max x and y distance to map to.
    * @returns {Array<number>} Transformed point.
    */
-  calculatePointTransform(point, rotationPoint, rotationTransform, xScale, yScale, mapTo) {
-    let transformedPoint = this._rotatePoint(point, rotationPoint, rotationTransform * Math.PI/180);
-    transformedPoint[0] = map(xScale, 0, 100, transformedPoint[0], mapTo[0]);
-    transformedPoint[1] = map(yScale, 0, 100, transformedPoint[1], mapTo[1]);
+  calculatePointTransform(point, center, rotationTransform, xScale, yScale) {
+    let transformedPoint = this._rotatePoint(point, center, rotationTransform * Math.PI/180);
+    transformedPoint[0] = map(xScale, 0, 100, transformedPoint[0], center[0]);
+    transformedPoint[1] = map(yScale, 0, 100, transformedPoint[1], center[1]);
 
     return transformedPoint;
   }
@@ -429,8 +430,19 @@ const VARIANCE = [
   20, // y
   180 // rot
 ];
-const SHADOW_X = 10;
-const SHADOW_Y = 5;
+
+const SHADOW_X = 7;
+const SHADOW_Y = 10;
+const SHADOW_ANGLE = Math.atan(SHADOW_Y / SHADOW_X); // RADIANS
+
+const BOX_X = -30;
+const BOX_Y = 0;
+const BOX_WIDTH = 330;
+const BOX_LENGTH = 500;
+const BOX_DEPTH = BOX_WIDTH/8;
+const BOX_ROT = ROTATION - 10;
+const BOX_SHADOW_LENGTH = BOX_WIDTH/8;
+
 
 const board = new Board(canvasWidth * 6/10, canvasHeight/16, ROWS, COLS, EDGE_LENGTH, NOTCH_DISPLACEMENT, NOTCH_LENGTH, UNPLACED_CHANCE, VARIANCE);
 board.newBoard();
@@ -445,8 +457,7 @@ function setup () {
 
   curRandomSeed = int(random(0, 1000));
 
-  // rotation in degrees
-  angleMode(DEGREES);
+  angleMode(RADIANS);
 }
 
 function changeRandomSeed() {
@@ -463,22 +474,174 @@ function mouseClicked() {
 function draw() {
   drawTable(canvasWidth, canvasHeight, ROTATION, SCALE_X, SCALE_Y);
   board.draw(ROTATION, SCALE_X, SCALE_Y, SHADOW_X, SHADOW_Y); 
+  drawPieceBox(BOX_X, BOX_Y, BOX_WIDTH, BOX_LENGTH, BOX_DEPTH, BOX_ROT, SCALE_X, SCALE_Y, SHADOW_ANGLE, BOX_SHADOW_LENGTH);
+
+  
+  push();
+  
+  noStroke();
+  fill([40, 40, 40, 70]);
+
+  // beginShape();
+  // vertex(width/4, 0);
+  // vertex(width, width * 3/4 * Math.tan(SHADOW_ANGLE));
+  // vertex(width, 0);
+  // endShape(CLOSE);
+
+  // stroke(0)
+  // beginShape();
+  // vertex(0, height);
+  // vertex(width/2, height);
+  // vertex(0, height - width/2 * Math.tan(SHADOW_ANGLE));
+  // endShape(CLOSE);
+
+  pop();
 }
 
+/**
+ * Draws a box that is meant to be where the pieces are stored.
+ * @param {number} x x coord for top of box.
+ * @param {number} y y coord for top of box
+ * @param {number} boxWidth Width of the box
+ * @param {number} boxLength Length of the box.
+ * @param {number} boxDepth Depth of the box.
+ * @param {number} angle Angle the box is rotated, in radians.
+ * @param {number} xScale Percentage number controlling the x values of each point, scaling it from the box's centre to it's original position. 
+ * @param {number} yScale Percentage number controlling the y values of each point, scaling it from the box's centre to it's original position. 
+ * @param {number} shadowAngle Angle of the shadow.
+ * @param {number} shadowLength Max length of the shadow.
+ */
+function drawPieceBox(x, y, boxWidth, boxLength, boxDepth, angle, xScale, yScale, shadowAngle, shadowLength) {
+  const CENTER = [boxWidth/2, boxLength/2];
+  const DARKEST_COLOR = [50, 1, 1, 255];
+  let allPoints = [];
+
+
+  let shadowX = shadowLength * Math.cos(shadowAngle);
+  let shadowY = shadowLength * Math.sin(shadowAngle);
+
+  /**
+   * Top of the box.
+   * 0 -- 3
+   * |    |
+   * 1 -- 2
+   */
+  let top = [
+    board.calculatePointTransform([0, 0], CENTER, angle, xScale, yScale),
+    board.calculatePointTransform([0, boxLength], CENTER, angle, xScale, yScale),
+    board.calculatePointTransform([boxWidth, boxLength], CENTER, angle, xScale, yScale),
+    board.calculatePointTransform([boxWidth, 0], CENTER, angle, xScale, yScale)
+  ];
+
+  /**
+   * Bottom of the box.
+   * 0 -- 1
+   * |    |
+   * 3 -- 2
+   */
+  let bot = [
+    top[1],
+    top[2],
+    [top[2][0], top[2][1] + boxDepth],
+    [top[1][0], top[1][1] + boxDepth]
+  ];
+
+  /**
+   * Right side of the box.
+   * 1 -- 2
+   * |    |
+   * 0 -- 3
+   */
+  let side = [
+    top[2],
+    top[3],
+    [top[3][0], top[3][1] + boxDepth],
+    [top[2][0], top[2][1] + boxDepth],
+  ];
+
+  let shadow = [
+    side[2],
+    [side[2][0] + shadowX, side[2][1] + shadowY],
+    [side[3][0] + shadowX, side[3][1] + shadowY],
+    [bot[3][0] + shadowX, bot[3][1] + shadowY],
+    bot[3]
+  ];
+
+  allPoints.push(shadow, side, bot, top);
+
+  push();
+
+  translate(x, y);
+  strokeWeight(boxWidth/160);
+  strokeJoin(ROUND);
+
+  // Draw all the points, rendering the shadow first.
+  for (let i=0; i<allPoints.length; i++) {
+    stroke([255, 251, 234]);
+    fill([
+      DARKEST_COLOR[0] * i,
+      DARKEST_COLOR[1] * i,
+      DARKEST_COLOR[2] * i,
+      DARKEST_COLOR[3] * i
+    ]);
+    if (i === 0) {
+      noStroke();
+      fill([30, 30, 30, 127]);
+    }
+    // Special case for the side which draws it black.
+    else if (i === 1) {
+      fill(0);
+    }
+
+    beginShape();
+    for (let p of allPoints[i]) {
+      vertex(p[0], p[1]);
+    }
+    endShape(CLOSE);
+  } 
+
+  // Draw the black section of the box.
+  fill(30);
+  beginShape();
+  vertex(top[0][0], top[0][1]);
+  vertex(top[2][0], top[2][1]);
+  vertex(top[3][0], top[3][1]);
+  endShape(CLOSE);
+
+  pop();
+}
+
+/**
+ * Draws the table the elements rest on.
+ * @param {number} width Max width of the table.
+ * @param {number} height Max height of the table.
+ * @param {number} angle Angle of the line that goes through the centre.
+ * @param {number} xScale Percentage number controlling the x values of each point, scaling it from the line's centre to it's original position. 
+ * @param {number} yScale Percentage number controlling the y values of each point, scaling it from the line's centre to it's original position. 
+ */
 function drawTable(width, height, angle, xScale, yScale) {
   let topPoint = [width/2, - 300];
   let botPoint = [width/2, height + 300];
-  
-  let transformedTop = board.calculatePointTransform(topPoint, [width/2, height/2], angle, xScale, yScale, [width/2, height/2]);
-  let transformedBot = board.calculatePointTransform(botPoint, [width/2, height/2], angle, xScale, yScale, [width/2, height/2]);
+
+  // Adds a bunch of points to an array for drawing a circle.
+  const RESOLUTION = 100;
+  let circlePoints = [];
+  for (let i=0; i<RESOLUTION; i++) {
+    circlePoints.push(board.calculatePointTransform([0, 0], [width/16, height/2], 360 * i / RESOLUTION, xScale, yScale));
+  }
+
+  // Transform the ends of the line.
+  let transformedTop = board.calculatePointTransform(topPoint, [width/2, height/2], angle, xScale, yScale);
+  let transformedBot = board.calculatePointTransform(botPoint, [width/2, height/2], angle, xScale, yScale);
+
+  push();
 
   // The table colour
-  push();
   background([96, 124, 68]);
   
-  // Table darker green
+  // The darker table colour
   noStroke();
-  fill([41, 58, 24]);
+  fill([93, 66, 46]);
   beginShape();
   vertex(-2, 0);
   vertex(transformedTop[0], transformedTop[1]);
@@ -492,59 +655,15 @@ function drawTable(width, height, angle, xScale, yScale) {
   strokeWeight(width/80); 
   line(transformedTop[0], transformedTop[1], transformedBot[0], transformedBot[1]);
 
-  // Darkness
-  noStroke();
-  fill([40, 40, 40, 127]);
+  // Circle
   beginShape();
-  vertex(0, 0);
-  vertex(width * 4/5, height);
-  vertex(0, height);
+  for (let cp of circlePoints) {
+    vertex(cp[0], cp[1]);
+  }
   endShape(CLOSE);
-
-  beginShape();
-  vertex(0, 0);
-  vertex(width, 0);
-  vertex(width, height/2);
-  endShape(CLOSE);
-
-
 
   pop();
 }
-
-// function drawTable(width, height) {
-//   push();
-  
-//   strokeWeight(3);
-//   stroke(0);
-//   fill([50, 30, 15]);
-//   rect(width * 2/3, 0, width, height);
-
-//   fill([30, 20, 10]);
-//   noStroke();
-//   triangle(
-//     width * 2/3, 0,
-//     width * 2/3, height,
-//     width, height
-//   );
-
-//   pop();
-
-//   push();
-  
-//   noStroke();
-//   fill([164, 116, 36]);
-//   rect(0, 0, width * 2/3, height);
-  
-//   strokeWeight(10);
-//   strokeCap(SQUARE);
-//   stroke([96, 59, 42]);
-
-//   line(width * 2/3, 0, width * 2/3, height);
-
-//   pop();
-// }
-
 
 function keyTyped() {
   if (key == '!') {

@@ -34,6 +34,12 @@ class Card {
   }
 }
 
+class Accessories {
+  constructor(xCenter, yCenter, size) {
+
+  }
+}
+
 class JigsawPiece {
   /**
    * Creates and stroes two Competitor objects.
@@ -45,7 +51,6 @@ class JigsawPiece {
    * @param {number} notchLength Size of the notch.
    * @param {boolean} unplaced Boolean flagging whether a piece is unplaced or not.
    * @param {Array<number>} variance Array containing minimum and maximum rotational and positional variation, assuming it is unplaced.
-
    */
   constructor(x, y, gridPos, edgeLength, notchDisplacement, notchLength, unplaced=false, variance=[0, 0, 0]) {
     this.x = x;
@@ -455,14 +460,16 @@ class JigsawPiece {
     }
   }
 
-  draw(xtranslate, ytranslate, rotationTransform, xScale, yScale, pass, shadowX, shadowY) {
+
+
+  draw(xtranslate, ytranslate, rotationTransform, xScale, yScale, pass, shadowX, shadowY, shadowStyle="connected") {
     push();
     angleMode(RADIANS);
   
     translate(this.x + xtranslate + this.variance[0], this.y + ytranslate + this.variance[1]);
 
-    this.player.draw(rotationTransform + this.variance[2], xScale, yScale, pass, shadowX, shadowY);
-    this.dealer.draw(rotationTransform + this.variance[2], xScale, yScale, pass, shadowX, shadowY);
+    this.player.draw(rotationTransform + this.variance[2], xScale, yScale, pass, shadowX, shadowY, shadowStyle);
+    this.dealer.draw(rotationTransform + this.variance[2], xScale, yScale, pass, shadowX, shadowY, shadowStyle);
     pop();
   }
 }
@@ -512,99 +519,199 @@ class Competitor {
    * @returns {Array<number>} Transformed point.
    */
   _applyTransforms(point, rotationTransform, xScale, yScale) {
-    let centerPointOfRotation = [this.edgeLength / 2, this.edgeLength / 2];
+    const CENTER = [this.edgeLength / 2, this.edgeLength / 2];
     // Apply rotation
-    let newXPoint = this.rotatePoint(point, centerPointOfRotation, rotationTransform * Math.PI/180)[0];
-    let newYPoint = this.rotatePoint(point, centerPointOfRotation, rotationTransform * Math.PI/180)[1];
+    let newXPoint = this.rotatePoint(point, CENTER, rotationTransform * Math.PI/180)[0];
+    let newYPoint = this.rotatePoint(point, CENTER, rotationTransform * Math.PI/180)[1];
 
     // Apply x scaling
-    newXPoint = map(xScale, 0, 100, newXPoint, this.edgeLength/2);
-    newYPoint = map(yScale, 0, 100, newYPoint, this.edgeLength/2);
+    newXPoint = map(xScale, 0, 100, newXPoint, CENTER[0]);
+    newYPoint = map(yScale, 0, 100, newYPoint, CENTER[1]);
 
     return [newXPoint, newYPoint];
   }
 
-  draw(rotationTransform, xScale, yScale, pass, shadowX, shadowY) {
+  draw(rotationTransform, xScale, yScale, pass, shadowX, shadowY, shadowStyle) {
     let transformedPoint;
     
     push();
     strokeWeight(this.edgeLength/60);
     strokeJoin(ROUND);
 
-    // Colours
+
+    // --------------------- SHADOW --------------------- //
+
     if (pass === "shadow") {
+      // Colours
       fill([30, 30, 30, 127]);
       noStroke();
+
+      // --------------------- HOVER --------------------- //
+
+      if (shadowStyle === "hover") {
+        beginShape();
+        for (let p of this.points) {
+          transformedPoint = this._applyTransforms(p, rotationTransform, xScale, yScale);
+          vertex(transformedPoint[0] + shadowX, transformedPoint[1] + shadowY); 
+        }
+        endShape(CLOSE);
+      }
+      
+      // --------------------- CONNECTED --------------------- //
+
+      else {
+        let startPointIndex;
+        let stopPointIndex;
+        if (this.playerType === "player") {
+  
+          // Starting point for player is [0, edgeLength];
+          for (let i=0; i<this.points.length; i++) {
+            if (this.points[i][0] === 0 && this.points[i][1] === this.edgeLength) {
+              startPointIndex = i;
+            }
+          }
+  
+          // End point for player is [edgelength, edgelength];
+          for (let i=0; i<this.points.length; i++) {
+            if (this.points[i][0] === this.edgeLength && this.points[i][1] === this.edgeLength) {
+              stopPointIndex = i;
+            }
+          }
+  
+          // Close point for player is [0, 0];
+          for (let i=0; i<this.points.length; i++) {
+            if (this.points[i][0] === this.edgeLength && this.points[i][1] === this.edgeLength) {
+              stopPointIndex = i;
+            }
+          }
+  
+          beginShape();
+          transformedPoint = this._applyTransforms(this.points[startPointIndex], rotationTransform, xScale, yScale);
+          vertex(transformedPoint[0], transformedPoint[1]);
+  
+          for (let i=startPointIndex; i<=stopPointIndex; i++) {
+            transformedPoint = this._applyTransforms(this.points[i], rotationTransform, xScale, yScale);
+            vertex(transformedPoint[0] + shadowX, transformedPoint[1] + shadowY);
+          }
+  
+          transformedPoint = this._applyTransforms(this.points[stopPointIndex], rotationTransform, xScale, yScale);
+          vertex(transformedPoint[0], transformedPoint[1]);
+          endShape(CLOSE);
+        }
+        else {
+  
+          // Starting point for player is [edgeLength, edgeLength];
+          for (let i=0; i<this.points.length; i++) {
+            if (this.points[i][0] === this.edgeLength && this.points[i][1] === this.edgeLength) {
+              startPointIndex = i;
+            }
+          }
+  
+          // End point for player is [edgelength, 0];
+          for (let i=0; i<this.points.length; i++) {
+            if (this.points[i][0] === this.edgeLength && this.points[i][1] === 0) {
+              stopPointIndex = i;
+            }
+          }
+  
+          beginShape();
+          transformedPoint = this._applyTransforms(this.points[startPointIndex], rotationTransform, xScale, yScale);
+          vertex(transformedPoint[0], transformedPoint[1]);
+  
+          for (let i=startPointIndex; i<=stopPointIndex; i++) {
+            transformedPoint = this._applyTransforms(this.points[i], rotationTransform, xScale, yScale);
+            vertex(transformedPoint[0] + shadowX, transformedPoint[1] + shadowY);
+          }
+  
+          transformedPoint = this._applyTransforms(this.points[stopPointIndex], rotationTransform, xScale, yScale);
+          vertex(transformedPoint[0], transformedPoint[1]);
+  
+          endShape(CLOSE);
+        }
+      }
     }
-    else {
-      stroke([255, 255, 255]);
-      fill((this.playerType === "player") ? [157, 1, 1] : [0, 0, 0]);
+
+
+    // --------------------- OBJECT --------------------- //
+
+    else if(pass === "object") {
+
+      // Colours
+      stroke([255,251,234]);
+      fill((this.playerType === "player") ? [157, 1, 1] : [30, 30, 30]);
       if (this.gameOutcome === "PUSH") fill([150, 127, 150]);
       if (this.gameOutcome === "BLACKJACK") fill([219, 172, 52]);
-    }
 
-    // Drawing the outline
-    beginShape();
-    for (let p of this.points) {
-      transformedPoint = this._applyTransforms(p, rotationTransform, xScale, yScale);
-      vertex(transformedPoint[0] + ((pass === "shadow") ? shadowX : 0), transformedPoint[1] + ((pass === "shadow") ? shadowY : 0)); 
-    }
-    endShape(CLOSE);
-    
-    // Drawing the face
-    noFill();
-    stroke((this.playerType === "player") ? [0, 0, 0] : [255, 255, 255]);
-    beginShape();
-    for (let fp of this.facePoints) {
-      transformedPoint = this._applyTransforms(fp, rotationTransform, xScale, yScale);
-      vertex(transformedPoint[0], transformedPoint[1]);
-    }
-    endShape(CLOSE);
+      // --------------------- OUTLINE --------------------- //
 
-    // Eyes
-    if (this.gameOutcome === "BUST") {
-      // I got lazy here
       beginShape();
-      for (let i=0; i<2; i++) {
-        transformedPoint = this._applyTransforms(this.leftEyePoints[i], rotationTransform, xScale, yScale);
-        vertex(transformedPoint[0], transformedPoint[1]);
+      for (let p of this.points) {
+        transformedPoint = this._applyTransforms(p, rotationTransform, xScale, yScale);
+        vertex(transformedPoint[0], transformedPoint[1]); 
       }
       endShape(CLOSE);
+      
+      // --------------------- FACE --------------------- //
+
+      noFill();
+      stroke((this.playerType === "player") ? [0, 0, 0] : [255, 255, 255]);
       beginShape();
-      for (let i=2; i<4; i++) {
-        transformedPoint = this._applyTransforms(this.leftEyePoints[i], rotationTransform, xScale, yScale);
+      for (let fp of this.facePoints) {
+        transformedPoint = this._applyTransforms(fp, rotationTransform, xScale, yScale);
         vertex(transformedPoint[0], transformedPoint[1]);
       }
       endShape(CLOSE);
 
-      beginShape();
-      for (let i=0; i<2; i++) {
-        transformedPoint = this._applyTransforms(this.rightEyePoints[i], rotationTransform, xScale, yScale);
-        vertex(transformedPoint[0], transformedPoint[1]);
-      }
-      endShape(CLOSE);
-      beginShape();
-      for (let i=2; i<4; i++) {
-        transformedPoint = this._applyTransforms(this.rightEyePoints[i], rotationTransform, xScale, yScale);
-        vertex(transformedPoint[0], transformedPoint[1]);
-      }
-      endShape(CLOSE);
-    }
-    else {
-      beginShape();
-      for (let ep of this.leftEyePoints) {
-        transformedPoint = this._applyTransforms(ep, rotationTransform, xScale, yScale);
-        vertex(transformedPoint[0], transformedPoint[1]);
-      }
-      endShape(CLOSE);
+      // --------------------- EYES --------------------- //
 
-      beginShape();
-      for (let ep of this.rightEyePoints) {
-        transformedPoint = this._applyTransforms(ep, rotationTransform, xScale, yScale);
-        vertex(transformedPoint[0], transformedPoint[1]);
+      if (this.gameOutcome === "BUST") {
+        beginShape();
+        for (let i=0; i<2; i++) {
+          transformedPoint = this._applyTransforms(this.leftEyePoints[i], rotationTransform, xScale, yScale);
+          vertex(transformedPoint[0], transformedPoint[1]);
+        }
+        endShape(CLOSE);
+        beginShape();
+        for (let i=2; i<4; i++) {
+          transformedPoint = this._applyTransforms(this.leftEyePoints[i], rotationTransform, xScale, yScale);
+          vertex(transformedPoint[0], transformedPoint[1]);
+        }
+        endShape(CLOSE);
+
+        beginShape();
+        for (let i=0; i<2; i++) {
+          transformedPoint = this._applyTransforms(this.rightEyePoints[i], rotationTransform, xScale, yScale);
+          vertex(transformedPoint[0], transformedPoint[1]);
+        }
+        endShape(CLOSE);
+        beginShape();
+        for (let i=2; i<4; i++) {
+          transformedPoint = this._applyTransforms(this.rightEyePoints[i], rotationTransform, xScale, yScale);
+          vertex(transformedPoint[0], transformedPoint[1]);
+        }
+        endShape(CLOSE);
       }
-      endShape(CLOSE);
+      else {
+        beginShape();
+        for (let ep of this.leftEyePoints) {
+          transformedPoint = this._applyTransforms(ep, rotationTransform, xScale, yScale);
+          vertex(transformedPoint[0], transformedPoint[1]);
+        }
+        endShape(CLOSE);
+
+        beginShape();
+        for (let ep of this.rightEyePoints) {
+          transformedPoint = this._applyTransforms(ep, rotationTransform, xScale, yScale);
+          vertex(transformedPoint[0], transformedPoint[1]);
+        }
+        endShape(CLOSE);
+      }
     }
+
+
+
+
+
 
     pop();
   }

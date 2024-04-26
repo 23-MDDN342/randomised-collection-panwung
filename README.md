@@ -37,3 +37,6 @@ Made the last notch shape for "heart" suit, a semi rounded notch (I couldn't be 
 
 24/04
 Began working on the table. Only some simple colours exist so far. Later on I will add a box for the puzzle pieces, or maybe a deck of cards. I want to try to make a gradient across the table. I plan on making accessories for each face if they have a king, queen, jack, or ace in their hand.
+
+26/04
+Began reworking the shadows cast by the pieces to make them look more realistic, because currently they are not. A box meant to be the container for the pieces have been added, although the shadow is too a bit broken. Tomorrow will be spent fixing these issues as well as implement one final thing; a new class called Accessories. This will give some additional details to competitors with JQKA cards in their hands, as well as add a logo to the box.

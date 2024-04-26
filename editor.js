@@ -253,8 +253,8 @@ function draw () {
   jigsawPiece.generateFace("player");
   jigsawPiece.generateFace("dealer");
 
-  jigsawPiece.draw(0, 0, s1, s2, s3, "shadow", -1, 1);
-  jigsawPiece.draw(0, 0, s1, s2, s3, "object", 0, 0);
+  jigsawPiece.draw(0, 0, s1, s2, s3, "shadow", 1, 1, "");
+  jigsawPiece.draw(0, 0, s1, s2, s3, "object", 0, 0, "");
 
   pop();
 
