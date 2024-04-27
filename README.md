@@ -40,3 +40,6 @@ Began working on the table. Only some simple colours exist so far. Later on I wi
 
 26/04
 Began reworking the shadows cast by the pieces to make them look more realistic, because currently they are not. A box meant to be the container for the pieces have been added, although the shadow is too a bit broken. Tomorrow will be spent fixing these issues as well as implement one final thing; a new class called Accessories. This will give some additional details to competitors with JQKA cards in their hands, as well as add a logo to the box.
+
+27/04
+I have changed my mind. Realistic shadows that connect to certain points of the pieces turns out to be far too complex for me to be bothered dealing with given the time frame. Added a new accessory that is drawn on any competitor that has an ace in their hand.

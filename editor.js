@@ -4,7 +4,6 @@
 
 const canvasWidth = 960;
 const canvasHeight = 500;
-const bg_color = [71, 222, 219];
 let slider1, slider2, slider3, slider4, slider5;
 let slider6, slider7, slider8, slider9, slider10;
 let faceSelector;
@@ -12,30 +11,31 @@ let faceGuideCheckbox;
 
 let _dummyCard = new Card("spade", "JKR", 0);
 
-const jigsawPiece = new JigsawPiece(-9, -9, [1, 1], 18, 2, 2);
+let edgeLength = 18;
+const jigsawPiece = new JigsawPiece(-9, -9, [1, 1], edgeLength, 2, 2);
 jigsawPiece.player.hand.push(_dummyCard, _dummyCard);
 jigsawPiece.dealer.hand.push(_dummyCard, _dummyCard);
 
-const _dummyLeft = new JigsawPiece(0, 0, [0, 1], 18, 2, 2);
+const _dummyLeft = new JigsawPiece(0, 0, [0, 1], 0, 0, 0);
 _dummyLeft.player.hand.push(_dummyCard, _dummyCard);
 _dummyLeft.dealer.hand.push(_dummyCard, _dummyCard);
 
-const _dummyRight = new JigsawPiece(0, 0, [2, 1], 18, 2, 2);
+const _dummyRight = new JigsawPiece(0, 0, [2, 1], 0, 0, 0);
 _dummyRight.player.hand.push(_dummyCard, _dummyCard);
 _dummyRight.dealer.hand.push(_dummyCard, _dummyCard);
 
-const _dummyUp = new JigsawPiece(0, 0, [1, 0], 18, 2, 2);
+const _dummyUp = new JigsawPiece(0, 0, [1, 0], 0, 0, 0);
 _dummyUp.player.hand.push(_dummyCard, _dummyCard);
 _dummyUp.dealer.hand.push(_dummyCard, _dummyCard);
 
-const _dummyDown = new JigsawPiece(0, 0, [1, 2], 18, 2, 2);
+const _dummyDown = new JigsawPiece(0, 0, [1, 2], 0, 0, 0);
 _dummyDown.player.hand.push(_dummyCard, _dummyCard);
 _dummyDown.dealer.hand.push(_dummyCard, _dummyCard);
 
-jigsawPiece.compareTo(_dummyLeft, "L");
-jigsawPiece.compareTo(_dummyDown, "D");
-jigsawPiece.compareTo(_dummyRight, "R");
-jigsawPiece.compareTo(_dummyUp, "U");
+jigsawPiece.generateEdges(_dummyLeft, "L");
+jigsawPiece.generateEdges(_dummyDown, "D");
+jigsawPiece.generateEdges(_dummyRight, "R");
+jigsawPiece.generateEdges(_dummyUp, "U");
 
 
 function setup () {
@@ -45,7 +45,7 @@ function setup () {
   main_canvas.parent('canvasContainer');
 
   // create sliders
-  slider1 = createSlider(-180, 180, 0); // Rotation
+  slider1 = createSlider(-360, 360, 0); // Rotation
   slider2 = createSlider(0, 100, 0);    // x Scale 
   slider3 = createSlider(0, 100, 0);    // y Scale
 
@@ -87,7 +87,7 @@ function draw () {
 
   let mode = faceSelector.value();
 
-  background(bg_color);
+  background(TABLE_COL);
 
   let s1 = slider1.value();
   let s2 = slider2.value();
@@ -112,8 +112,6 @@ function draw () {
   translate(face_x, face_y);
   scale(face_scale);
 
-  push();
-
   jigsawPiece.player.points = [[0, 0]];
   jigsawPiece.dealer.points = [[jigsawPiece.edgeLength, jigsawPiece.edgeLength]];
   jigsawPiece.player.score = s8;
@@ -125,10 +123,10 @@ function draw () {
     jigsawPiece.dealer.hand[0].suit = "spade";
     jigsawPiece.dealer.hand[1].suit = "spade";
 
-    jigsawPiece.compareTo(_dummyLeft, "L");
-    jigsawPiece.compareTo(_dummyDown, "D");
-    jigsawPiece.compareTo(_dummyRight, "R");
-    jigsawPiece.compareTo(_dummyUp, "U");
+    jigsawPiece.generateEdges(_dummyLeft, "L");
+    jigsawPiece.generateEdges(_dummyDown, "D");
+    jigsawPiece.generateEdges(_dummyRight, "R");
+    jigsawPiece.generateEdges(_dummyUp, "U");
 
     jigsawPiece.player.points[2][0] = 2 * s4;
     jigsawPiece.player.points[3][0] = 2 * s4;
@@ -142,17 +140,16 @@ function draw () {
     jigsawPiece.dealer.points[7][1] = 2 * s7;
     jigsawPiece.dealer.points[8][1] = 2 * s7;
   }
-
   if (mode == 'Heart') {
     jigsawPiece.player.hand[0].suit = "heart";
     jigsawPiece.player.hand[1].suit = "heart";
     jigsawPiece.dealer.hand[0].suit = "heart";
     jigsawPiece.dealer.hand[1].suit = "heart";
 
-    jigsawPiece.compareTo(_dummyLeft, "L");
-    jigsawPiece.compareTo(_dummyDown, "D");
-    jigsawPiece.compareTo(_dummyRight, "R");
-    jigsawPiece.compareTo(_dummyUp, "U");
+    jigsawPiece.generateEdges(_dummyLeft, "L");
+    jigsawPiece.generateEdges(_dummyDown, "D");
+    jigsawPiece.generateEdges(_dummyRight, "R");
+    jigsawPiece.generateEdges(_dummyUp, "U");
 
     jigsawPiece.player.points[2][0] = 1.5 * s4;
     jigsawPiece.player.points[3][0] = 2 * s4;
@@ -177,10 +174,10 @@ function draw () {
     jigsawPiece.dealer.hand[0].suit = "club";
     jigsawPiece.dealer.hand[1].suit = "club";
 
-    jigsawPiece.compareTo(_dummyLeft, "L");
-    jigsawPiece.compareTo(_dummyDown, "D");
-    jigsawPiece.compareTo(_dummyRight, "R");
-    jigsawPiece.compareTo(_dummyUp, "U");
+    jigsawPiece.generateEdges(_dummyLeft, "L");
+    jigsawPiece.generateEdges(_dummyDown, "D");
+    jigsawPiece.generateEdges(_dummyRight, "R");
+    jigsawPiece.generateEdges(_dummyUp, "U");
 
     jigsawPiece.player.points[2][0] = 2 * s4;
     jigsawPiece.player.points[3][0] = 2 * s4;
@@ -201,10 +198,10 @@ function draw () {
     jigsawPiece.dealer.hand[0].suit = "diamond";
     jigsawPiece.dealer.hand[1].suit = "diamond";
   
-    jigsawPiece.compareTo(_dummyLeft, "L");
-    jigsawPiece.compareTo(_dummyDown, "D");
-    jigsawPiece.compareTo(_dummyRight, "R");
-    jigsawPiece.compareTo(_dummyUp, "U");
+    jigsawPiece.generateEdges(_dummyLeft, "L");
+    jigsawPiece.generateEdges(_dummyDown, "D");
+    jigsawPiece.generateEdges(_dummyRight, "R");
+    jigsawPiece.generateEdges(_dummyUp, "U");
   
     jigsawPiece.player.points[2][0] = 2 * s4;
     jigsawPiece.player.points[6][1] = jigsawPiece.edgeLength + 2 * s5;
@@ -250,13 +247,17 @@ function draw () {
     }
   }
 
+  ellipseMode(CENTER);
+  noFill();
+  stroke(255);
+  strokeWeight(edgeLength/60);
+  circle(0, 0, edgeLength * Math.sqrt(2) * 1.05);
+
   jigsawPiece.generateFace("player");
   jigsawPiece.generateFace("dealer");
 
   jigsawPiece.draw(0, 0, s1, s2, s3, "shadow", 1, 1, "");
   jigsawPiece.draw(0, 0, s1, s2, s3, "object", 0, 0, "");
-
-  pop();
 
   if(show_face_guide) {
     strokeWeight(0.1);

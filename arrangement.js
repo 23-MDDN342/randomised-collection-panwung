@@ -150,18 +150,18 @@ class Board {
         let jp = this.jigsawPieces[c][r];
 
         // Player
-        if (r - 1 < 0) { jp.compareTo(undefined, "L"); }
-        else { jp.compareTo(this.jigsawPieces[c][r - 1], "L"); }
+        if (r - 1 < 0) { jp.generateEdges(undefined, "L"); }
+        else { jp.generateEdges(this.jigsawPieces[c][r - 1], "L"); }
 
-        if (c + 1 > this.jigsawPieces.length - 1) { jp.compareTo(undefined, "D"); }
-        else { jp.compareTo(this.jigsawPieces[c + 1][r], "D"); }
+        if (c + 1 > this.jigsawPieces.length - 1) { jp.generateEdges(undefined, "D"); }
+        else { jp.generateEdges(this.jigsawPieces[c + 1][r], "D"); }
 
         // Dealer
-        if (r + 1 > this.jigsawPieces[0].length - 1) { jp.compareTo(undefined, "R"); }
-        else { jp.compareTo(this.jigsawPieces[c][r + 1], "R"); }
+        if (r + 1 > this.jigsawPieces[0].length - 1) { jp.generateEdges(undefined, "R"); }
+        else { jp.generateEdges(this.jigsawPieces[c][r + 1], "R"); }
 
-        if (c - 1 < 0) { jp.compareTo(undefined, "U"); }
-        else { jp.compareTo(this.jigsawPieces[c - 1][r], "U"); }
+        if (c - 1 < 0) { jp.generateEdges(undefined, "U"); }
+        else { jp.generateEdges(this.jigsawPieces[c - 1][r], "U"); }
         
       }
     }
@@ -416,14 +416,14 @@ let curRandomSeed = 0;
 let lastSwapTime = 0;
 const millisPerSwap = 3000;
 
-const ROWS = 5;
+const ROWS = 7;
 const COLS = 6;
 const EDGE_LENGTH = 100;
 const ROTATION = 30;
 const SCALE_X = 0;
 const SCALE_Y = 20;
-const NOTCH_DISPLACEMENT = 8;
-const NOTCH_LENGTH = 9;
+const NOTCH_DISPLACEMENT = 11;
+const NOTCH_LENGTH = 10;
 const UNPLACED_CHANCE = 40;
 const VARIANCE = [
   40, // x
@@ -431,72 +431,22 @@ const VARIANCE = [
   180 // rot
 ];
 
-const SHADOW_X = 7;
-const SHADOW_Y = 10;
+const SHADOW_X = 10;
+const SHADOW_Y = 5;
 const SHADOW_ANGLE = Math.atan(SHADOW_Y / SHADOW_X); // RADIANS
 
 const BOX_X = -30;
 const BOX_Y = 0;
 const BOX_WIDTH = 330;
 const BOX_LENGTH = 500;
-const BOX_DEPTH = BOX_WIDTH/8;
-const BOX_ROT = ROTATION - 10;
+const BOX_DEPTH = BOX_WIDTH/7;
+const BOX_ROT = ROTATION - 15;
 const BOX_SHADOW_LENGTH = BOX_WIDTH/8;
-
 
 const board = new Board(canvasWidth * 6/10, canvasHeight/16, ROWS, COLS, EDGE_LENGTH, NOTCH_DISPLACEMENT, NOTCH_LENGTH, UNPLACED_CHANCE, VARIANCE);
 board.newBoard();
 
-// global variables for colors
-const bg_color1 = [71, 222, 219];
-
-function setup () {
-  // create the drawing canvas, save the canvas element
-  let main_canvas = createCanvas(canvasWidth, canvasHeight);
-  main_canvas.parent('canvasContainer');
-
-  curRandomSeed = int(random(0, 1000));
-
-  angleMode(RADIANS);
-}
-
-function changeRandomSeed() {
-  curRandomSeed = curRandomSeed + 1;
-  lastSwapTime = millis();
-  board.newBoard();
-}
-
-function mouseClicked() {
-  changeRandomSeed();
-}
-
-
-function draw() {
-  drawTable(canvasWidth, canvasHeight, ROTATION, SCALE_X, SCALE_Y);
-  board.draw(ROTATION, SCALE_X, SCALE_Y, SHADOW_X, SHADOW_Y); 
-  drawPieceBox(BOX_X, BOX_Y, BOX_WIDTH, BOX_LENGTH, BOX_DEPTH, BOX_ROT, SCALE_X, SCALE_Y, SHADOW_ANGLE, BOX_SHADOW_LENGTH);
-
-  
-  push();
-  
-  noStroke();
-  fill([40, 40, 40, 70]);
-
-  // beginShape();
-  // vertex(width/4, 0);
-  // vertex(width, width * 3/4 * Math.tan(SHADOW_ANGLE));
-  // vertex(width, 0);
-  // endShape(CLOSE);
-
-  // stroke(0)
-  // beginShape();
-  // vertex(0, height);
-  // vertex(width/2, height);
-  // vertex(0, height - width/2 * Math.tan(SHADOW_ANGLE));
-  // endShape(CLOSE);
-
-  pop();
-}
+const acc = new Accessory(canvasWidth/2, canvasHeight/2, 80, new Card("spade", "A", 11));
 
 /**
  * Draws a box that is meant to be where the pieces are stored.
@@ -513,9 +463,7 @@ function draw() {
  */
 function drawPieceBox(x, y, boxWidth, boxLength, boxDepth, angle, xScale, yScale, shadowAngle, shadowLength) {
   const CENTER = [boxWidth/2, boxLength/2];
-  const DARKEST_COLOR = [50, 1, 1, 255];
-  let allPoints = [];
-
+  let boxBounds = [];
 
   let shadowX = shadowLength * Math.cos(shadowAngle);
   let shadowY = shadowLength * Math.sin(shadowAngle);
@@ -559,44 +507,51 @@ function drawPieceBox(x, y, boxWidth, boxLength, boxDepth, angle, xScale, yScale
     [top[2][0], top[2][1] + boxDepth],
   ];
 
+  boxBounds.push(side, bot, top);
+
   let shadow = [
     side[2],
-    [side[2][0] + shadowX, side[2][1] + shadowY],
-    [side[3][0] + shadowX, side[3][1] + shadowY],
-    [bot[3][0] + shadowX, bot[3][1] + shadowY],
+    [side[2][0], side[2][1]],
+    [side[3][0], side[3][1]],
+    [bot[3][0], bot[3][1]],
     bot[3]
   ];
-
-  allPoints.push(shadow, side, bot, top);
 
   push();
 
   translate(x, y);
+
+  noStroke();
+  fill(SHADOW_COL);
+  // Small shadow
+  beginShape();
+  for (let i=0; i<shadow.length; i++) {
+    if (i === 0 || i === shadow.length -1) { vertex(shadow[i][0], shadow[i][1]); }
+    else { vertex(shadow[i][0] + shadowX/5, shadow[i][1] + shadowY/5); }
+  }
+  endShape(CLOSE);
+
+  // Large shadow 
+  beginShape();
+  for (let i=0; i<shadow.length; i++) {
+    if (i === 0 || i === shadow.length -1) { vertex(shadow[i][0], shadow[i][1]); }
+    else { vertex(shadow[i][0] + shadowX, shadow[i][1] + shadowY); }
+  }
+  endShape(CLOSE);
+
   strokeWeight(boxWidth/160);
   strokeJoin(ROUND);
 
-  // Draw all the points, rendering the shadow first.
-  for (let i=0; i<allPoints.length; i++) {
-    stroke([255, 251, 234]);
-    fill([
-      DARKEST_COLOR[0] * i,
-      DARKEST_COLOR[1] * i,
-      DARKEST_COLOR[2] * i,
-      DARKEST_COLOR[3] * i
-    ]);
-    if (i === 0) {
-      noStroke();
-      fill([30, 30, 30, 127]);
-    }
+  // Draw the bounds of the box.
+  stroke([255, 251, 234]);
+  for (let i=0; i<boxBounds.length; i++) {
+    fill([BOX_COL[0] * i, BOX_COL[1] * i, BOX_COL[2] * i, BOX_COL[3] * i]);
+
     // Special case for the side which draws it black.
-    else if (i === 1) {
-      fill(0);
-    }
+    if (i === 0) { fill(0); }
 
     beginShape();
-    for (let p of allPoints[i]) {
-      vertex(p[0], p[1]);
-    }
+    for (let p of boxBounds[i]) {  vertex(p[0], p[1]); }
     endShape(CLOSE);
   } 
 
@@ -608,6 +563,14 @@ function drawPieceBox(x, y, boxWidth, boxLength, boxDepth, angle, xScale, yScale
   vertex(top[3][0], top[3][1]);
   endShape(CLOSE);
 
+  // Highlight
+  noFill();
+  stroke(HIGHLIGHT_COL);
+  beginShape();
+  vertex(top[1][0] - shadowX/10, top[1][1] - shadowY/10);
+  vertex(top[0][0] - shadowX/10, top[0][1] - shadowY/10);
+  vertex(top[3][0] - shadowX/10, top[3][1] - shadowY/10);
+  endShape();
   pop();
 }
 
@@ -637,11 +600,11 @@ function drawTable(width, height, angle, xScale, yScale) {
   push();
 
   // The table colour
-  background([96, 124, 68]);
+  background(TABLE_COL);
   
   // The darker table colour
   noStroke();
-  fill([93, 66, 46]);
+  fill(TABLE_ALT_COL);
   beginShape();
   vertex(-2, 0);
   vertex(transformedTop[0], transformedTop[1]);
@@ -657,9 +620,55 @@ function drawTable(width, height, angle, xScale, yScale) {
 
   // Circle
   beginShape();
-  for (let cp of circlePoints) {
-    vertex(cp[0], cp[1]);
-  }
+  for (let cp of circlePoints) { vertex(cp[0], cp[1]); }
+  endShape(CLOSE);
+
+  pop();
+}
+
+function setup () {
+  // create the drawing canvas, save the canvas element
+  let main_canvas = createCanvas(canvasWidth, canvasHeight);
+  main_canvas.parent('canvasContainer');
+
+  curRandomSeed = int(random(0, 1000));
+
+  angleMode(RADIANS);
+}
+
+function changeRandomSeed() {
+  curRandomSeed = curRandomSeed + 1;
+  lastSwapTime = millis();
+  board.newBoard();
+}
+
+function mouseClicked() {
+  changeRandomSeed();
+}
+
+function draw() {
+  drawTable(canvasWidth, canvasHeight, ROTATION, SCALE_X, SCALE_Y);
+  board.draw(ROTATION, SCALE_X, SCALE_Y, SHADOW_X, SHADOW_Y); 
+  drawPieceBox(BOX_X, BOX_Y, BOX_WIDTH, BOX_LENGTH, BOX_DEPTH, BOX_ROT, SCALE_X, SCALE_Y, SHADOW_ANGLE, BOX_SHADOW_LENGTH);
+
+  push();
+  noStroke();
+  fill([40, 40, 40, 70]);
+
+  beginShape();
+  vertex(width/4, 0);
+  vertex(width, width * 3/4 * Math.tan(SHADOW_ANGLE));
+  vertex(width, 0);
+  endShape(CLOSE);
+  pop();
+
+  push();
+  noStroke();
+  fill([40, 40, 40, 70]);
+  beginShape();
+  vertex(0, height);
+  vertex(width/2, height);
+  vertex(0, height - width/2 * Math.tan(SHADOW_ANGLE));
   endShape(CLOSE);
 
   pop();

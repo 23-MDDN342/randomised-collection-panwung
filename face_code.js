@@ -34,9 +34,45 @@ class Card {
   }
 }
 
-class Accessories {
-  constructor(xCenter, yCenter, size) {
+class Accessory {
+  /**
+   * Constructor.
+   * @param {number} xCenter x coord of accessory centre.
+   * @param {number} yCenter y coord of accessory centre.
+   * @param {number} size Max size of accessory.
+   * @param {string} symbol Symbol of a card, used to determine its shape.
+   */
+  constructor(xCenter, yCenter, size, symbol) {
+    this.x = xCenter;
+    this.y = yCenter;
+    this.size = size;
+    this.symbol = symbol; // Symbols are J Q K A
 
+    this.points = [];
+    this.generatePoints();
+  }
+
+  generatePoints() {
+    this.points = [];
+    switch (this.symbol) {
+      case "A":
+        this.points = [
+          [this.x,this.y - this.size/2],
+          [this.x - this.size/2,this.y + this.size/3],
+          [this.x,this.y + this.size/4],
+          [this.x - this.size/3,this.y + this.size/2],
+          [this.x + this.size/3,this.y + this.size/2],
+          [this.x,this.y + this.size/4],
+          [this.x + this.size/2,this.y + this.size/3],
+        ];
+        break;
+      case "J":
+        break;
+      case "Q":
+        break;
+      case "K":
+        break;
+    }
   }
 }
 
@@ -76,7 +112,8 @@ class JigsawPiece {
     target.leftEyePoints = [];
     target.rightEyePoints = [];
 
-    // Mouth points
+    // --------------------- MOUTH --------------------- //
+
     let mouthX = (competitor === "player") ? this.edgeLength / 4 : this.edgeLength * 3/4;
     let mouthY = (competitor === "player") ? this.edgeLength * 2/3 : this.edgeLength/3;
     let mouthMaxDisplacement = [mouthX + this.edgeLength / 10, mouthY];
@@ -141,7 +178,8 @@ class JigsawPiece {
       );
     }
 
-    // Eyes
+    // --------------------- EYES --------------------- //
+
     if (target.gameOutcome === "BUST") {
       target.leftEyePoints.push(
         [leftEyeCenterRotation[0] - this.edgeLength/20, leftEyeCenterRotation[1] - this.edgeLength/20],
@@ -193,6 +231,42 @@ class JigsawPiece {
         );
       }
     }
+
+    // --------------------- ACCESSORY --------------------- //
+
+    // Get the first card in the hand that has a special symbol.
+    const special = ["J", "Q", "K", "A"];
+    let accessoryCard = undefined;
+    for (let card of target.hand) {
+      if (special.includes(card.symbol)) { 
+        accessoryCard = card; 
+        break;
+      }
+    }
+
+    // 
+    if (accessoryCard !== undefined) {
+      if (accessoryCard.symbol === "A") {
+        if (competitor === "player") {
+          target.accessory = new Accessory(
+            this.edgeLength * 1/4, 
+            this.edgeLength/2, 
+            this.edgeLength/5, 
+            "A"
+          );
+        }
+        else { 
+          target.accessory = new Accessory(
+            this.edgeLength * 3/4, 
+            this.edgeLength/2 - this.edgeLength/3, 
+            this.edgeLength/5, 
+            "A"
+          );
+         }
+      }
+      // USE ELSE IF
+    }
+    
   }
  
   /**
@@ -200,7 +274,7 @@ class JigsawPiece {
    * @param {JigsawPiece} other The JigsawPiece object to compare to.
    * @param {string} dir Direction of this other piece.
    */
-  compareTo(other, dir) {
+  generateEdges(other, dir) {
     let halfLength = this.edgeLength / 2;
 
     switch (dir) {
@@ -460,16 +534,14 @@ class JigsawPiece {
     }
   }
 
-
-
-  draw(xtranslate, ytranslate, rotationTransform, xScale, yScale, pass, shadowX, shadowY, shadowStyle="connected") {
+  draw(xtranslate, ytranslate, rotationTransform, xScale, yScale, pass, shadowX, shadowY) {
     push();
     angleMode(RADIANS);
   
     translate(this.x + xtranslate + this.variance[0], this.y + ytranslate + this.variance[1]);
 
-    this.player.draw(rotationTransform + this.variance[2], xScale, yScale, pass, shadowX, shadowY, shadowStyle);
-    this.dealer.draw(rotationTransform + this.variance[2], xScale, yScale, pass, shadowX, shadowY, shadowStyle);
+    this.player.draw(rotationTransform + this.variance[2], xScale, yScale, pass, shadowX, shadowY);
+    this.dealer.draw(rotationTransform + this.variance[2], xScale, yScale, pass, shadowX, shadowY);
     pop();
   }
 }
@@ -485,7 +557,7 @@ class Competitor {
    * @param {boolean} isPlayer Determines whether the competitor is a player or dealer.
    */
   constructor(x, y, edgeLength, isPlayer) {
-    // this.accessories = []; // for later
+    this.accessory = undefined;
     this.hand = [];
     this.score = 0;
     this.gameOutcome = "draw";
@@ -531,116 +603,46 @@ class Competitor {
     return [newXPoint, newYPoint];
   }
 
-  draw(rotationTransform, xScale, yScale, pass, shadowX, shadowY, shadowStyle) {
+  draw(rotationTransform, xScale, yScale, pass, shadowX, shadowY) {
     let transformedPoint;
     
     push();
-    strokeWeight(this.edgeLength/60);
-    strokeJoin(ROUND);
-
 
     // --------------------- SHADOW --------------------- //
 
     if (pass === "shadow") {
-      // Colours
-      fill([30, 30, 30, 127]);
       noStroke();
+      fill(SHADOW_COL);
 
-      // --------------------- HOVER --------------------- //
-
-      if (shadowStyle === "hover") {
-        beginShape();
-        for (let p of this.points) {
-          transformedPoint = this._applyTransforms(p, rotationTransform, xScale, yScale);
-          vertex(transformedPoint[0] + shadowX, transformedPoint[1] + shadowY); 
-        }
-        endShape(CLOSE);
+      // Small shadow
+      beginShape();
+      for (let p of this.points) {
+        transformedPoint = this._applyTransforms(p, rotationTransform, xScale, yScale);
+        vertex(transformedPoint[0] + shadowX/3, transformedPoint[1] + shadowY/3); 
       }
-      
-      // --------------------- CONNECTED --------------------- //
+      endShape(CLOSE);
 
-      else {
-        let startPointIndex;
-        let stopPointIndex;
-        if (this.playerType === "player") {
-  
-          // Starting point for player is [0, edgeLength];
-          for (let i=0; i<this.points.length; i++) {
-            if (this.points[i][0] === 0 && this.points[i][1] === this.edgeLength) {
-              startPointIndex = i;
-            }
-          }
-  
-          // End point for player is [edgelength, edgelength];
-          for (let i=0; i<this.points.length; i++) {
-            if (this.points[i][0] === this.edgeLength && this.points[i][1] === this.edgeLength) {
-              stopPointIndex = i;
-            }
-          }
-  
-          // Close point for player is [0, 0];
-          for (let i=0; i<this.points.length; i++) {
-            if (this.points[i][0] === this.edgeLength && this.points[i][1] === this.edgeLength) {
-              stopPointIndex = i;
-            }
-          }
-  
-          beginShape();
-          transformedPoint = this._applyTransforms(this.points[startPointIndex], rotationTransform, xScale, yScale);
-          vertex(transformedPoint[0], transformedPoint[1]);
-  
-          for (let i=startPointIndex; i<=stopPointIndex; i++) {
-            transformedPoint = this._applyTransforms(this.points[i], rotationTransform, xScale, yScale);
-            vertex(transformedPoint[0] + shadowX, transformedPoint[1] + shadowY);
-          }
-  
-          transformedPoint = this._applyTransforms(this.points[stopPointIndex], rotationTransform, xScale, yScale);
-          vertex(transformedPoint[0], transformedPoint[1]);
-          endShape(CLOSE);
-        }
-        else {
-  
-          // Starting point for player is [edgeLength, edgeLength];
-          for (let i=0; i<this.points.length; i++) {
-            if (this.points[i][0] === this.edgeLength && this.points[i][1] === this.edgeLength) {
-              startPointIndex = i;
-            }
-          }
-  
-          // End point for player is [edgelength, 0];
-          for (let i=0; i<this.points.length; i++) {
-            if (this.points[i][0] === this.edgeLength && this.points[i][1] === 0) {
-              stopPointIndex = i;
-            }
-          }
-  
-          beginShape();
-          transformedPoint = this._applyTransforms(this.points[startPointIndex], rotationTransform, xScale, yScale);
-          vertex(transformedPoint[0], transformedPoint[1]);
-  
-          for (let i=startPointIndex; i<=stopPointIndex; i++) {
-            transformedPoint = this._applyTransforms(this.points[i], rotationTransform, xScale, yScale);
-            vertex(transformedPoint[0] + shadowX, transformedPoint[1] + shadowY);
-          }
-  
-          transformedPoint = this._applyTransforms(this.points[stopPointIndex], rotationTransform, xScale, yScale);
-          vertex(transformedPoint[0], transformedPoint[1]);
-  
-          endShape(CLOSE);
-        }
+      // Large shadow
+      beginShape();
+      for (let p of this.points) {
+        transformedPoint = this._applyTransforms(p, rotationTransform, xScale, yScale);
+        vertex(transformedPoint[0] + shadowX, transformedPoint[1] + shadowY); 
       }
+      endShape(CLOSE);
     }
-
 
     // --------------------- OBJECT --------------------- //
 
     else if(pass === "object") {
 
+      strokeWeight(this.edgeLength/60);
+      strokeJoin(ROUND);
+
       // Colours
-      stroke([255,251,234]);
-      fill((this.playerType === "player") ? [157, 1, 1] : [30, 30, 30]);
-      if (this.gameOutcome === "PUSH") fill([150, 127, 150]);
-      if (this.gameOutcome === "BLACKJACK") fill([219, 172, 52]);
+      stroke([255, 251, 234]);
+      fill((this.playerType === "player") ? RED_COL : BLACK_COL);
+      if (this.gameOutcome === "PUSH") fill(PUSH_COL);
+      if (this.gameOutcome === "BLACKJACK") fill(BLACKJACK_COL);
 
       // --------------------- OUTLINE --------------------- //
 
@@ -650,7 +652,7 @@ class Competitor {
         vertex(transformedPoint[0], transformedPoint[1]); 
       }
       endShape(CLOSE);
-      
+
       // --------------------- FACE --------------------- //
 
       noFill();
@@ -706,13 +708,34 @@ class Competitor {
         }
         endShape(CLOSE);
       }
+
+      // --------------------- ACCESSORY --------------------- //
+
+      if (this.accessory !== undefined) {
+        push();
+        
+        stroke((this.playerType === "player") ? [0, 0, 0] : [255, 255, 255]);
+        noFill();
+
+        beginShape();
+        for (let i=0; i<this.accessory.points.length; i++) {
+          transformedPoint = this._applyTransforms(this.accessory.points[i], rotationTransform, xScale, yScale);
+          vertex(transformedPoint[0], transformedPoint[1]);
+        }
+        endShape(CLOSE);
+        pop();
+      }
+
+      // --------------------- HIGHLIGHT --------------------- //
+      noFill();
+      stroke(HIGHLIGHT_COL);
+      beginShape();
+      for (let p of this.points) {
+        transformedPoint = this._applyTransforms(p, rotationTransform, xScale, yScale);
+        vertex(transformedPoint[0] - shadowX/8, transformedPoint[1] - shadowY/8); 
+      }
+      endShape();
     }
-
-
-
-
-
-
     pop();
   }
 
@@ -723,3 +746,15 @@ class Competitor {
     return [newPointX, newPointY];
   }
 }
+
+const SHADOW_COL = [30, 30, 30, 40];
+const HIGHLIGHT_COL = [249, 232, 127, 70];
+const RED_COL = [157, 1, 1];
+const BLACK_COL = [30, 30, 30];
+const PUSH_COL = [150, 127, 150];
+const BLACKJACK_COL = [219, 172, 52];
+
+const TABLE_COL = [96, 124, 68];
+const TABLE_ALT_COL = [93, 66, 46];
+
+const BOX_COL = [RED_COL[0]/3, 1, 1, 255];
