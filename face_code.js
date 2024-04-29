@@ -71,6 +71,15 @@ class Accessory {
       case "Q":
         break;
       case "K":
+        this.points = [
+          [this.x, this.y - this.size/2],
+          [this.x - this.size/4, this.y],
+          [this.x - this.size/2, this.y - this.size/4],
+          [this.x - this.size/3, this.y + this.size/2],
+          [this.x + this.size/3, this.y + this.size/2],
+          [this.x + this.size/2, this.y - this.size/4],
+          [this.x + this.size/4, this.y],
+        ];
         break;
     }
   }
@@ -235,38 +244,71 @@ class JigsawPiece {
     // --------------------- ACCESSORY --------------------- //
 
     // Get the first card in the hand that has a special symbol.
-    const special = ["J", "Q", "K", "A"];
+    const special = ["J", "Q", "K"];
     let accessoryCard = undefined;
-    for (let card of target.hand) {
-      if (special.includes(card.symbol)) { 
-        accessoryCard = card; 
-        break;
+
+    if (target.gameOutcome === "BLACKJACK") { accessoryCard = "A"; }
+    else {
+      for (let card of target.hand) {
+        if (special.includes(card.symbol)) { 
+          accessoryCard = card.symbol; 
+          break;
+        }
       }
     }
 
-    // 
+    // Create new accessory based on hand. Only one accessory can be created.
     if (accessoryCard !== undefined) {
-      if (accessoryCard.symbol === "A") {
-        if (competitor === "player") {
-          target.accessory = new Accessory(
-            this.edgeLength * 1/4, 
-            this.edgeLength/2, 
-            this.edgeLength/5, 
-            "A"
-          );
-        }
-        else { 
-          target.accessory = new Accessory(
-            this.edgeLength * 3/4, 
-            this.edgeLength/2 - this.edgeLength/3, 
-            this.edgeLength/5, 
-            "A"
-          );
-         }
+      switch (accessoryCard) {
+        case "A":
+          // Give the accessory to the player.
+          if (competitor === "player") {
+            target.accessory = new Accessory(
+              this.edgeLength * 1/4, 
+              this.edgeLength/2, 
+              this.edgeLength/5, 
+              "A"
+            );
+          }
+          // Give the accessory to the dealer.
+          else { 
+            target.accessory = new Accessory(
+              this.edgeLength * 3/4, 
+              this.edgeLength/2 - this.edgeLength/3, 
+              this.edgeLength/5, 
+              "A"
+            );
+          }
+          break;
+        
+        case "J":
+          break;
+
+        case "Q":
+          break;
+
+        case "K":
+          // Give the accessory to the player.
+          if (competitor === "player") {
+            target.accessory = new Accessory(
+              this.edgeLength * 1/4, 
+              this.edgeLength/2, 
+              this.edgeLength/5, 
+              "K"
+            );
+          }
+          // Give the accessory to the dealer.
+          else { 
+            target.accessory = new Accessory(
+              this.edgeLength * 3/4, 
+              this.edgeLength/2 - this.edgeLength/3, 
+              this.edgeLength/5, 
+              "K"
+            );
+          }
+          break;
       }
-      // USE ELSE IF
     }
-    
   }
  
   /**

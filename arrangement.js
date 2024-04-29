@@ -100,14 +100,6 @@ class Board {
   }
 
   /**
-   * 50/50 Chance of either returning true (heads) or false (tails).
-   * @returns {boolean} Outcome of coin flip.
-   */
-  coinFlip() {
-    return Math.random() < 0.5;
-  }
-
-  /**
    * Pulls a random card from a given array of cards.
    * @param {Array<Card>} deck Deck of cards.
    * @returns {Card} A random card from the provided deck.
@@ -188,7 +180,7 @@ class Board {
           if (player.score < 15 && dealer.hand[0].value >= 10) { this.addToHand(player, this.pullRandom(this.deck)); }
 
           // If the player's score is less than 15, flip a coin to either pull again or stop.
-          if (player.score < 15 && this.coinFlip()) { this.addToHand(player, this.pullRandom(this.deck)); }
+          if (player.score < 15 && Math.random() < 0.5) { this.addToHand(player, this.pullRandom(this.deck)); }
           else { break; }
         }
 
@@ -242,6 +234,103 @@ class Board {
         jp.generateFace("dealer");
       }
     }
+  }
+
+  /**
+   * Gets the total number of Jacks, Queens, Kings, and Blackjacks across all competitors.
+   * @returns {object} An object containing the count of Jacks, Queens, Kings, and Blackjacks.
+   */
+  getSymbolCount() {
+    let counter = { "J" : 0, "Q" : 0, "K" : 0, "A" : 0 };
+
+    for (let row of this.jigsawPieces) {
+      for (let jp of row) {
+        let player = jp.player;
+        let dealer = jp.dealer;
+
+        // If Blackjack, immediatly break out from this player
+        if (player.gameOutcome === "BLACKJACK") { counter.A++; }
+        else {
+          for (let card of player.hand) {
+            if (Object.keys(counter).includes(card.symbol)) {
+              counter[card.symbol]++;
+              break;
+            }
+          }
+        }
+
+        // If Blackjack, immediatly break out from this dealer
+        if (dealer.gameOutcome === "BLACKJACK") { counter.A++; }
+        else {
+          for (let card of dealer.hand) {
+            if (Object.keys(counter).includes(card.symbol)) {
+              counter[card.symbol]++;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    return counter;
+  }
+
+  /**
+   * Gets the total number of spades, hearts, clubs, and diamonds across all competitors.
+   * @returns {object} An object containing the count of spades, hearts, clubs, and diamonds.
+   */
+  getSuitCount() {
+    let counter = { "spade" : 0, "heart" : 0, "club" : 0, "diamond" : 0 };
+
+    for (let row of this.jigsawPieces) {
+      for (let jp of row) {
+        let player = jp.player;
+        let dealer = jp.dealer;
+
+        for (let card of player.hand) { counter[card.suit]++; }
+        for (let card of dealer.hand) { counter[card.suit]++; }
+      }
+    }
+
+    return counter;
+  }
+
+  /**
+   * Get the highest occuring symbol or outcome if Blackjack is the highest.
+   * @returns {string} The most occuring symbol or outcome.
+   */
+  getHighestSymbol() {
+    let count = this.getSymbolCount();
+    let highestCount = 0;
+    let highestSymbol = undefined;
+
+    for (let sym of Object.keys(count)) {
+      if (count[sym] > highestCount) {
+        highestSymbol = sym;
+        highestCount = count[sym];
+      }
+    }
+
+    return highestSymbol;
+  }
+
+    /**
+   * Get the highest occuring suit.
+   * @returns {string} The most occuring suit.
+   */
+  getHighestSuit() {
+    let count = this.getSuitCount();
+    let highestCount = 0;
+    let highestSuit = undefined;
+
+    for (let suit of Object.keys(count)) {
+      if (count[suit] > highestCount) {
+        highestSuit = suit;
+        highestCount = count[suit];
+      }
+    }
+
+    return highestSuit;
   }
 
   /**
@@ -338,6 +427,23 @@ class Board {
   }
 
   /**
+   * Method for calculating point transforms.
+   * @param {Array<number>} point 
+   * @param {Array<number>} center Point to transform around.
+   * @param {number} rotationTransform Amount to rotate the point around the piece's centre, in degrees.
+   * @param {number} xScale Percentage number controlling the x values of each point, scaling it from each JigsawPiece's centre to it's original position. 
+   * @param {number} yScale Percentage number controlling the y values of each point, scaling it from each JigsawPiece's centre to it's original position. 
+   * @returns {Array<number>} Transformed point.
+   */
+  calculatePointTransform(point, center, rotationTransform, xScale, yScale) {
+    let transformedPoint = this._rotatePoint(point, center, rotationTransform * Math.PI/180);
+    transformedPoint[0] = map(xScale, 0, 100, transformedPoint[0], center[0]);
+    transformedPoint[1] = map(yScale, 0, 100, transformedPoint[1], center[1]);
+
+    return transformedPoint;
+  }
+
+  /**
    * Based on translated, draw.
    * @param {number} translationXY Translation distance for points.
    * @param {number} rotationTransform Amount to rotate the point around the piece's centre, in degrees.
@@ -372,23 +478,6 @@ class Board {
     }
 
     pop();
-  }
-
-  /**
-   * Method for calculating point transforms.
-   * @param {Array<number>} point 
-   * @param {Array<number>} center Point to transform around.
-   * @param {number} rotationTransform Amount to rotate the point around the piece's centre, in degrees.
-   * @param {number} xScale Percentage number controlling the x values of each point, scaling it from each JigsawPiece's centre to it's original position. 
-   * @param {number} yScale Percentage number controlling the y values of each point, scaling it from each JigsawPiece's centre to it's original position. 
-   * @returns {Array<number>} Transformed point.
-   */
-  calculatePointTransform(point, center, rotationTransform, xScale, yScale) {
-    let transformedPoint = this._rotatePoint(point, center, rotationTransform * Math.PI/180);
-    transformedPoint[0] = map(xScale, 0, 100, transformedPoint[0], center[0]);
-    transformedPoint[1] = map(yScale, 0, 100, transformedPoint[1], center[1]);
-
-    return transformedPoint;
   }
 
   /**
@@ -446,7 +535,6 @@ const BOX_SHADOW_LENGTH = BOX_WIDTH/8;
 const board = new Board(canvasWidth * 6/10, canvasHeight/16, ROWS, COLS, EDGE_LENGTH, NOTCH_DISPLACEMENT, NOTCH_LENGTH, UNPLACED_CHANCE, VARIANCE);
 board.newBoard();
 
-const acc = new Accessory(canvasWidth/2, canvasHeight/2, 80, new Card("spade", "A", 11));
 
 /**
  * Draws a box that is meant to be where the pieces are stored.
@@ -460,9 +548,12 @@ const acc = new Accessory(canvasWidth/2, canvasHeight/2, 80, new Card("spade", "
  * @param {number} yScale Percentage number controlling the y values of each point, scaling it from the box's centre to it's original position. 
  * @param {number} shadowAngle Angle of the shadow.
  * @param {number} shadowLength Max length of the shadow.
+ * @param {string} mostOccuringSymbol Symbol to determine what accessory will be drawn.
+ * @param {string} mostOccuringSuit Suit to determine what colour the accessory will have.
  */
-function drawPieceBox(x, y, boxWidth, boxLength, boxDepth, angle, xScale, yScale, shadowAngle, shadowLength) {
+function drawPieceBox(x, y, boxWidth, boxLength, boxDepth, angle, xScale, yScale, shadowAngle, shadowLength, mostOccuringSymbol, mostOccuringSuit) {
   const CENTER = [boxWidth/2, boxLength/2];
+  const totals = new Accessory(CENTER[0], CENTER[1], BOX_WIDTH/2, mostOccuringSymbol);
   let boxBounds = [];
 
   let shadowX = shadowLength * Math.cos(shadowAngle);
@@ -563,6 +654,19 @@ function drawPieceBox(x, y, boxWidth, boxLength, boxDepth, angle, xScale, yScale
   vertex(top[3][0], top[3][1]);
   endShape(CLOSE);
 
+  // Box accessory
+  if (mostOccuringSuit === "heart" || mostOccuringSuit === "diamond") {
+    fill(RED_COL);
+  }
+  else { fill(BLACK_COL); }
+  beginShape();
+  for (let p of totals.points) {
+    let transformedPoint = board.calculatePointTransform(p, CENTER, angle, xScale, yScale);
+    vertex(transformedPoint[0], transformedPoint[1]);
+  }
+  endShape(CLOSE);
+
+
   // Highlight
   noFill();
   stroke(HIGHLIGHT_COL);
@@ -649,7 +753,7 @@ function mouseClicked() {
 function draw() {
   drawTable(canvasWidth, canvasHeight, ROTATION, SCALE_X, SCALE_Y);
   board.draw(ROTATION, SCALE_X, SCALE_Y, SHADOW_X, SHADOW_Y); 
-  drawPieceBox(BOX_X, BOX_Y, BOX_WIDTH, BOX_LENGTH, BOX_DEPTH, BOX_ROT, SCALE_X, SCALE_Y, SHADOW_ANGLE, BOX_SHADOW_LENGTH);
+  drawPieceBox(BOX_X, BOX_Y, BOX_WIDTH, BOX_LENGTH, BOX_DEPTH, BOX_ROT, SCALE_X, SCALE_Y, SHADOW_ANGLE, BOX_SHADOW_LENGTH, board.getHighestSymbol(), board.getHighestSuit());
 
   push();
   noStroke();

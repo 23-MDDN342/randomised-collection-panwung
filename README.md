@@ -43,3 +43,6 @@ Began reworking the shadows cast by the pieces to make them look more realistic,
 
 27/04
 I have changed my mind. Realistic shadows that connect to certain points of the pieces turns out to be far too complex for me to be bothered dealing with given the time frame. Added a new accessory that is drawn on any competitor that has an ace in their hand.
+
+29/04
+Made new accessory for king: crown. These new accessories are given based on which card a competitor held first, e.g. if a competitor has both a king and a queen, but recieved the king card first, then it will have a king accessory. The box also now has an accessory. Its shape and colour is determined by the most occuring symbol out of J Q K and Blackjack, and its colour is determined by the most occuring suit.
