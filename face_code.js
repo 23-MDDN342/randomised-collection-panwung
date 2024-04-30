@@ -67,18 +67,42 @@ class Accessory {
         ];
         break;
       case "J":
+        this.points = [
+          [this.x, this.y - this.size/2],
+          [this.x - this.size/8, this.y - this.size/8],
+          [this.x - this.size/2, this.y],
+          [this.x - this.size/8, this.y + this.size/8],
+          [this.x, this.y + this.size/2],
+          [this.x + this.size/8, this.y + this.size/8],
+          [this.x + this.size/2, this.y],
+          [this.x + this.size/8, this.y - this.size/8],
+        ];
         break;
       case "Q":
+        this.points = [
+          [this.x, this.y + this.size/2],
+          [this.x - this.size/8, this.y - this.size/4],
+          [this.x - this.size/4, this.y - this.size/4],
+          [this.x - this.size/4, this.y - this.size/3],
+          [this.x - this.size/16, this.y - this.size/3],
+          [this.x - this.size/16, this.y - this.size/2],
+          [this.x + this.size/16, this.y - this.size/2],
+          [this.x + this.size/16, this.y - this.size/3],
+          [this.x + this.size/4, this.y - this.size/3],
+          [this.x + this.size/4, this.y - this.size/4],
+          [this.x + this.size/8, this.y - this.size/4],
+          
+        ];
         break;
       case "K":
         this.points = [
           [this.x, this.y - this.size/2],
-          [this.x - this.size/4, this.y],
+          [this.x - this.size/4, this.y + this.size/8],
           [this.x - this.size/2, this.y - this.size/4],
           [this.x - this.size/3, this.y + this.size/2],
           [this.x + this.size/3, this.y + this.size/2],
           [this.x + this.size/2, this.y - this.size/4],
-          [this.x + this.size/4, this.y],
+          [this.x + this.size/4, this.y + this.size/8],
         ];
         break;
     }
@@ -120,6 +144,7 @@ class JigsawPiece {
     target.facePoints = [];
     target.leftEyePoints = [];
     target.rightEyePoints = [];
+    target.accessory = undefined;
 
     // --------------------- MOUTH --------------------- //
 
@@ -259,55 +284,10 @@ class JigsawPiece {
 
     // Create new accessory based on hand. Only one accessory can be created.
     if (accessoryCard !== undefined) {
-      switch (accessoryCard) {
-        case "A":
-          // Give the accessory to the player.
-          if (competitor === "player") {
-            target.accessory = new Accessory(
-              this.edgeLength * 1/4, 
-              this.edgeLength/2, 
-              this.edgeLength/5, 
-              "A"
-            );
-          }
-          // Give the accessory to the dealer.
-          else { 
-            target.accessory = new Accessory(
-              this.edgeLength * 3/4, 
-              this.edgeLength/2 - this.edgeLength/3, 
-              this.edgeLength/5, 
-              "A"
-            );
-          }
-          break;
-        
-        case "J":
-          break;
-
-        case "Q":
-          break;
-
-        case "K":
-          // Give the accessory to the player.
-          if (competitor === "player") {
-            target.accessory = new Accessory(
-              this.edgeLength * 1/4, 
-              this.edgeLength/2, 
-              this.edgeLength/5, 
-              "K"
-            );
-          }
-          // Give the accessory to the dealer.
-          else { 
-            target.accessory = new Accessory(
-              this.edgeLength * 3/4, 
-              this.edgeLength/2 - this.edgeLength/3, 
-              this.edgeLength/5, 
-              "K"
-            );
-          }
-          break;
-      }
+      let x = (competitor === "player") ? this.edgeLength * 1/4 : this.edgeLength * 3/4;
+      let y = (competitor === "player") ? this.edgeLength/2 : this.edgeLength/2 - this.edgeLength/3;
+      let size = this.edgeLength/5;
+      target.accessory = new Accessory(x, y, size, accessoryCard);
     }
   }
  

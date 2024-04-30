@@ -160,7 +160,7 @@ class Board {
   }
 
   /**
-   * Generates the faces of each JigsawPiece object's player and dealer, through a game of Blackjack. 
+   * Generates the faces of each JigsawPiece object's player and dealer through a game of Blackjack. 
    */
   generateFaces() {
     for (let c=0; c<this.jigsawPieces.length; c++) {
@@ -314,7 +314,7 @@ class Board {
     return highestSymbol;
   }
 
-    /**
+  /**
    * Get the highest occuring suit.
    * @returns {string} The most occuring suit.
    */
@@ -534,7 +534,6 @@ const BOX_SHADOW_LENGTH = BOX_WIDTH/8;
 
 const board = new Board(canvasWidth * 6/10, canvasHeight/16, ROWS, COLS, EDGE_LENGTH, NOTCH_DISPLACEMENT, NOTCH_LENGTH, UNPLACED_CHANCE, VARIANCE);
 board.newBoard();
-
 
 /**
  * Draws a box that is meant to be where the pieces are stored.

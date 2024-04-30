@@ -6,6 +6,8 @@
 >This starter code is just some simple faces being drawn. 
 
 
+
+
 14/04 
 Began work on drawing each half piece.
 The original plan was to have rounded notches, but it became far too complex for my brain to be bothered handling, so instead triangles will be used as the shape of the notch
@@ -46,3 +48,6 @@ I have changed my mind. Realistic shadows that connect to certain points of the 
 
 29/04
 Made new accessory for king: crown. These new accessories are given based on which card a competitor held first, e.g. if a competitor has both a king and a queen, but recieved the king card first, then it will have a king accessory. The box also now has an accessory. Its shape and colour is determined by the most occuring symbol out of J Q K and Blackjack, and its colour is determined by the most occuring suit.
+
+30/04
+Added the last two accessories for J Q: star and dagger respectively. 

@@ -13,8 +13,11 @@ let _dummyCard = new Card("spade", "JKR", 0);
 
 let edgeLength = 18;
 const jigsawPiece = new JigsawPiece(-9, -9, [1, 1], edgeLength, 2, 2);
-jigsawPiece.player.hand.push(_dummyCard, _dummyCard);
-jigsawPiece.dealer.hand.push(_dummyCard, _dummyCard);
+const player = jigsawPiece.player;
+const dealer = jigsawPiece.dealer;
+
+player.hand.push(_dummyCard, _dummyCard);
+dealer.hand.push(_dummyCard, _dummyCard);
 
 const _dummyLeft = new JigsawPiece(0, 0, [0, 1], 0, 0, 0);
 _dummyLeft.player.hand.push(_dummyCard, _dummyCard);
@@ -37,7 +40,6 @@ jigsawPiece.generateEdges(_dummyDown, "D");
 jigsawPiece.generateEdges(_dummyRight, "R");
 jigsawPiece.generateEdges(_dummyUp, "U");
 
-
 function setup () {
 
   // create the drawing canvas, save the canvas element
@@ -45,7 +47,7 @@ function setup () {
   main_canvas.parent('canvasContainer');
 
   // create sliders
-  slider1 = createSlider(-360, 360, 0); // Rotation
+  slider1 = createSlider(-180, 180, 0); // Rotation
   slider2 = createSlider(0, 100, 0);    // x Scale 
   slider3 = createSlider(0, 100, 0);    // y Scale
 
@@ -55,7 +57,7 @@ function setup () {
   slider7 = createSlider(-1, 1, 0);   // Down notch
   slider8 = createSlider(2, 22, 12);  // Player score
   slider9 = createSlider(2, 22, 11);  // Dealer score
-  slider10 = createSlider(0, 100, 50);
+  slider10 = createSlider(0, 3, 0);
 
   slider1.parent('slider1Container');
   slider2.parent('slider2Container');
@@ -112,138 +114,155 @@ function draw () {
   translate(face_x, face_y);
   scale(face_scale);
 
-  jigsawPiece.player.points = [[0, 0]];
-  jigsawPiece.dealer.points = [[jigsawPiece.edgeLength, jigsawPiece.edgeLength]];
-  jigsawPiece.player.score = s8;
-  jigsawPiece.dealer.score = s9;
+  player.points = [[0, 0]];
+  dealer.points = [[jigsawPiece.edgeLength, jigsawPiece.edgeLength]];
+  player.score = s8;
+  dealer.score = s9;
+
+  if (s10 === 0) { 
+    player.hand[0].symbol = "JKR"; 
+    dealer.hand[0].symbol = "JKR";
+  }
+  if (s10 === 1) { 
+    player.hand[0].symbol = "J"; 
+    dealer.hand[0].symbol = "J";
+  }
+  if (s10 === 2) { 
+    player.hand[0].symbol = "Q"; 
+    dealer.hand[0].symbol = "Q";
+  }
+  if (s10 === 3) { 
+    player.hand[0].symbol = "K"; 
+    dealer.hand[0].symbol = "K";
+  }
 
   if (mode == 'Spade') {
-    jigsawPiece.player.hand[0].suit = "spade";
-    jigsawPiece.player.hand[1].suit = "spade";
-    jigsawPiece.dealer.hand[0].suit = "spade";
-    jigsawPiece.dealer.hand[1].suit = "spade";
+    player.hand[0].suit = "spade";
+    player.hand[1].suit = "spade";
+    dealer.hand[0].suit = "spade";
+    dealer.hand[1].suit = "spade";
 
     jigsawPiece.generateEdges(_dummyLeft, "L");
     jigsawPiece.generateEdges(_dummyDown, "D");
     jigsawPiece.generateEdges(_dummyRight, "R");
     jigsawPiece.generateEdges(_dummyUp, "U");
 
-    jigsawPiece.player.points[2][0] = 2 * s4;
-    jigsawPiece.player.points[3][0] = 2 * s4;
+    player.points[2][0] = 2 * s4;
+    player.points[3][0] = 2 * s4;
 
-    jigsawPiece.player.points[7][1] = jigsawPiece.edgeLength + 2 * s5;
-    jigsawPiece.player.points[8][1] = jigsawPiece.edgeLength + 2 * s5;
+    player.points[7][1] = jigsawPiece.edgeLength + 2 * s5;
+    player.points[8][1] = jigsawPiece.edgeLength + 2 * s5;
 
-    jigsawPiece.dealer.points[2][0] = jigsawPiece.edgeLength + 2 * s6;
-    jigsawPiece.dealer.points[3][0] = jigsawPiece.edgeLength + 2 * s6;
+    dealer.points[2][0] = jigsawPiece.edgeLength + 2 * s6;
+    dealer.points[3][0] = jigsawPiece.edgeLength + 2 * s6;
 
-    jigsawPiece.dealer.points[7][1] = 2 * s7;
-    jigsawPiece.dealer.points[8][1] = 2 * s7;
+    dealer.points[7][1] = 2 * s7;
+    dealer.points[8][1] = 2 * s7;
   }
   if (mode == 'Heart') {
-    jigsawPiece.player.hand[0].suit = "heart";
-    jigsawPiece.player.hand[1].suit = "heart";
-    jigsawPiece.dealer.hand[0].suit = "heart";
-    jigsawPiece.dealer.hand[1].suit = "heart";
+    player.hand[0].suit = "heart";
+    player.hand[1].suit = "heart";
+    dealer.hand[0].suit = "heart";
+    dealer.hand[1].suit = "heart";
 
     jigsawPiece.generateEdges(_dummyLeft, "L");
     jigsawPiece.generateEdges(_dummyDown, "D");
     jigsawPiece.generateEdges(_dummyRight, "R");
     jigsawPiece.generateEdges(_dummyUp, "U");
 
-    jigsawPiece.player.points[2][0] = 1.5 * s4;
-    jigsawPiece.player.points[3][0] = 2 * s4;
-    jigsawPiece.player.points[4][0] = 1.5 * s4;
+    player.points[2][0] = 1.5 * s4;
+    player.points[3][0] = 2 * s4;
+    player.points[4][0] = 1.5 * s4;
 
-    jigsawPiece.player.points[8][1] = jigsawPiece.edgeLength + 1.5 * s5;
-    jigsawPiece.player.points[9][1] = jigsawPiece.edgeLength + 2 * s5;
-    jigsawPiece.player.points[10][1] = jigsawPiece.edgeLength + 1.5 * s5;
+    player.points[8][1] = jigsawPiece.edgeLength + 1.5 * s5;
+    player.points[9][1] = jigsawPiece.edgeLength + 2 * s5;
+    player.points[10][1] = jigsawPiece.edgeLength + 1.5 * s5;
 
-    jigsawPiece.dealer.points[2][0] = jigsawPiece.edgeLength + 1.5 * s6;
-    jigsawPiece.dealer.points[3][0] = jigsawPiece.edgeLength + 2 * s6;
-    jigsawPiece.dealer.points[4][0] = jigsawPiece.edgeLength + 1.5 * s6;
+    dealer.points[2][0] = jigsawPiece.edgeLength + 1.5 * s6;
+    dealer.points[3][0] = jigsawPiece.edgeLength + 2 * s6;
+    dealer.points[4][0] = jigsawPiece.edgeLength + 1.5 * s6;
 
-    jigsawPiece.dealer.points[8][1] = 1.5 * s7;
-    jigsawPiece.dealer.points[9][1] = 2 * s7;
-    jigsawPiece.dealer.points[10][1] = 1.5 * s7;
+    dealer.points[8][1] = 1.5 * s7;
+    dealer.points[9][1] = 2 * s7;
+    dealer.points[10][1] = 1.5 * s7;
 
   }
   if (mode == 'Club') {
-    jigsawPiece.player.hand[0].suit = "club";
-    jigsawPiece.player.hand[1].suit = "club";
-    jigsawPiece.dealer.hand[0].suit = "club";
-    jigsawPiece.dealer.hand[1].suit = "club";
+    player.hand[0].suit = "club";
+    player.hand[1].suit = "club";
+    dealer.hand[0].suit = "club";
+    dealer.hand[1].suit = "club";
 
     jigsawPiece.generateEdges(_dummyLeft, "L");
     jigsawPiece.generateEdges(_dummyDown, "D");
     jigsawPiece.generateEdges(_dummyRight, "R");
     jigsawPiece.generateEdges(_dummyUp, "U");
 
-    jigsawPiece.player.points[2][0] = 2 * s4;
-    jigsawPiece.player.points[3][0] = 2 * s4;
+    player.points[2][0] = 2 * s4;
+    player.points[3][0] = 2 * s4;
 
-    jigsawPiece.player.points[7][1] = jigsawPiece.edgeLength + 2 * s5;
-    jigsawPiece.player.points[8][1] = jigsawPiece.edgeLength + 2 * s5;
+    player.points[7][1] = jigsawPiece.edgeLength + 2 * s5;
+    player.points[8][1] = jigsawPiece.edgeLength + 2 * s5;
 
-    jigsawPiece.dealer.points[2][0] = jigsawPiece.edgeLength + 2 * s6;
-    jigsawPiece.dealer.points[3][0] = jigsawPiece.edgeLength + 2 * s6;
+    dealer.points[2][0] = jigsawPiece.edgeLength + 2 * s6;
+    dealer.points[3][0] = jigsawPiece.edgeLength + 2 * s6;
 
-    jigsawPiece.dealer.points[7][1] = 2 * s7;
-    jigsawPiece.dealer.points[8][1] = 2 * s7;
+    dealer.points[7][1] = 2 * s7;
+    dealer.points[8][1] = 2 * s7;
   }
   if (mode == 'Diamond') {
     // Notches
-    jigsawPiece.player.hand[0].suit = "diamond";
-    jigsawPiece.player.hand[1].suit = "diamond";
-    jigsawPiece.dealer.hand[0].suit = "diamond";
-    jigsawPiece.dealer.hand[1].suit = "diamond";
+    player.hand[0].suit = "diamond";
+    player.hand[1].suit = "diamond";
+    dealer.hand[0].suit = "diamond";
+    dealer.hand[1].suit = "diamond";
   
     jigsawPiece.generateEdges(_dummyLeft, "L");
     jigsawPiece.generateEdges(_dummyDown, "D");
     jigsawPiece.generateEdges(_dummyRight, "R");
     jigsawPiece.generateEdges(_dummyUp, "U");
   
-    jigsawPiece.player.points[2][0] = 2 * s4;
-    jigsawPiece.player.points[6][1] = jigsawPiece.edgeLength + 2 * s5;
-    jigsawPiece.dealer.points[2][0] = jigsawPiece.edgeLength + 2 * s6;
-    jigsawPiece.dealer.points[6][1] = 2 * s7;
+    player.points[2][0] = 2 * s4;
+    player.points[6][1] = jigsawPiece.edgeLength + 2 * s5;
+    dealer.points[2][0] = jigsawPiece.edgeLength + 2 * s6;
+    dealer.points[6][1] = 2 * s7;
   }
 
   // Player bust
-  if (jigsawPiece.player.score > 21) {
-    jigsawPiece.player.gameOutcome = "BUST";
-    jigsawPiece.dealer.gameOutcome = (jigsawPiece.dealer.score === 21 && jigsawPiece.dealer.hand.length === 2) ? "BLACKJACK" : "WIN";
+  if (player.score > 21) {
+    player.gameOutcome = "BUST";
+    dealer.gameOutcome = (dealer.score === 21 && dealer.hand.length === 2) ? "BLACKJACK" : "WIN";
   }
   // Dealer bust
-  else if (jigsawPiece.dealer.score > 21) {
-    jigsawPiece.player.gameOutcome = (jigsawPiece.player.score === 21 && jigsawPiece.player.hand.length === 2) ? "BLACKJACK" : "WIN";
-    jigsawPiece.dealer.gameOutcome = "BUST";
+  else if (dealer.score > 21) {
+    player.gameOutcome = (player.score === 21 && player.hand.length === 2) ? "BLACKJACK" : "WIN";
+    dealer.gameOutcome = "BUST";
   }
   // Push
-  else if (jigsawPiece.player.score === jigsawPiece.dealer.score) {
-    jigsawPiece.player.gameOutcome = "PUSH";
-    jigsawPiece.dealer.gameOutcome = "PUSH";
+  else if (player.score === dealer.score) {
+    player.gameOutcome = "PUSH";
+    dealer.gameOutcome = "PUSH";
   }
   // Player win
-  else if (jigsawPiece.player.score > jigsawPiece.dealer.score) {
-    jigsawPiece.player.gameOutcome = "WIN";
-    jigsawPiece.dealer.gameOutcome = "LOSE";
+  else if (player.score > dealer.score) {
+    player.gameOutcome = "WIN";
+    dealer.gameOutcome = "LOSE";
 
     // Player blackjack
-    if (jigsawPiece.player.score === 21 && jigsawPiece.player.hand.length === 2) {
-      jigsawPiece.player.gameOutcome = "BLACKJACK";
-      jigsawPiece.dealer.gameOutcome = "BLACKJACKLOSS";
+    if (player.score === 21 && player.hand.length === 2) {
+      player.gameOutcome = "BLACKJACK";
+      dealer.gameOutcome = "BLACKJACKLOSS";
     }
   }
   // Dealer win
-  else if (jigsawPiece.player.score < jigsawPiece.dealer.score) {
-    jigsawPiece.player.gameOutcome = "LOSE";
-    jigsawPiece.dealer.gameOutcome = "WIN";
+  else if (player.score < dealer.score) {
+    player.gameOutcome = "LOSE";
+    dealer.gameOutcome = "WIN";
 
     // Dealer blackjack
-    if (jigsawPiece.dealer.score === 21 && jigsawPiece.dealer.hand.length === 2) {
-      jigsawPiece.player.gameOutcome = "BLACKJACKLOSS";
-      jigsawPiece.dealer.gameOutcome = "BLACKJACK";
+    if (dealer.score === 21 && dealer.hand.length === 2) {
+      player.gameOutcome = "BLACKJACKLOSS";
+      dealer.gameOutcome = "BLACKJACK";
     }
   }
 
