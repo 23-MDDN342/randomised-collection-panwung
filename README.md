@@ -5,8 +5,12 @@
 
 >This starter code is just some simple faces being drawn. 
 
+## Readme:
 
 
+
+
+## Changelog:
 
 14/04 
 Began work on drawing each half piece.

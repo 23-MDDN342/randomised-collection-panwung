@@ -57,7 +57,7 @@ function setup () {
   slider7 = createSlider(-1, 1, 0);   // Down notch
   slider8 = createSlider(2, 22, 12);  // Player score
   slider9 = createSlider(2, 22, 11);  // Dealer score
-  slider10 = createSlider(0, 3, 0);
+  slider10 = createSlider(0, 3, 0);   // Accessory
 
   slider1.parent('slider1Container');
   slider2.parent('slider2Container');
@@ -114,11 +114,13 @@ function draw () {
   translate(face_x, face_y);
   scale(face_scale);
 
+  // Init points and scores for competitors.
   player.points = [[0, 0]];
   dealer.points = [[jigsawPiece.edgeLength, jigsawPiece.edgeLength]];
   player.score = s8;
   dealer.score = s9;
 
+  // Based on accessory setting, set the suit for each competitors first card.
   if (s10 === 0) { 
     player.hand[0].symbol = "JKR"; 
     dealer.hand[0].symbol = "JKR";
@@ -266,6 +268,7 @@ function draw () {
     }
   }
 
+  // Draws a circle in the background.
   ellipseMode(CENTER);
   noFill();
   stroke(255);

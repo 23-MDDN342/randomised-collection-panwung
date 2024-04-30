@@ -34,6 +34,9 @@ class Card {
   }
 }
 
+/**
+ * Accessory class.
+ */
 class Accessory {
   /**
    * Constructor.
@@ -52,9 +55,14 @@ class Accessory {
     this.generatePoints();
   }
 
+  /**
+   * Generates an array of points based on a given symbol.
+   */
   generatePoints() {
     this.points = [];
     switch (this.symbol) {
+
+      // Ace
       case "A":
         this.points = [
           [this.x,this.y - this.size/2],
@@ -66,6 +74,8 @@ class Accessory {
           [this.x + this.size/2,this.y + this.size/3],
         ];
         break;
+
+      // Star
       case "J":
         this.points = [
           [this.x, this.y - this.size/2],
@@ -78,6 +88,8 @@ class Accessory {
           [this.x + this.size/8, this.y - this.size/8],
         ];
         break;
+      
+      // Dagger
       case "Q":
         this.points = [
           [this.x, this.y + this.size/2],
@@ -94,6 +106,8 @@ class Accessory {
           
         ];
         break;
+
+      // Crown
       case "K":
         this.points = [
           [this.x, this.y - this.size/2],
@@ -109,6 +123,9 @@ class Accessory {
   }
 }
 
+/**
+ * JigsawPiece class which contains two competitor objects.
+ */
 class JigsawPiece {
   /**
    * Creates and stroes two Competitor objects.
@@ -136,6 +153,10 @@ class JigsawPiece {
     this.dealer = new Competitor(x, y, edgeLength, false);
   }
 
+  /**
+   * Gemerates an array of points for a given competitror in order to draw its face.
+   * @param {Competitor} competitor Competitor object.
+   */
   generateFace(competitor) {
     const RESOLUTION = 30;
     let target = (competitor === "player") ? this.player : this.dealer;
@@ -556,6 +577,17 @@ class JigsawPiece {
     }
   }
 
+  /**
+   * Method for drawing its player and dealer competitors in global space.
+   * @param {number} xtranslate Amount to translate x coord by.
+   * @param {number} ytranslate Amount to translate y coord by.
+   * @param {number} rotationTransform Amount to rotate the point around the piece's centre, in degrees.
+   * @param {number} xScale Percentage number controlling the x values of each point, scaling it from each JigsawPiece's centre to it's original position. 
+   * @param {number} yScale Percentage number controlling the y values of each point, scaling it from each JigsawPiece's centre to it's original position. 
+   * @param {string} pass Render pass. Either shadow or object.
+   * @param {number} shadowX x offset for rendering the shadow.
+   * @param {number} shadowY y offset for rendering the shadow.
+   */
   draw(xtranslate, ytranslate, rotationTransform, xScale, yScale, pass, shadowX, shadowY) {
     push();
     angleMode(RADIANS);
@@ -568,6 +600,9 @@ class JigsawPiece {
   }
 }
 
+/**
+ * Competitor class. Can be either player or dealer.
+ */
 class Competitor {
   /**
    * Creates a triangle which is half of the jigsaw piece.
@@ -595,6 +630,10 @@ class Competitor {
     this.rightEyePoints = [];
   }
 
+  /**
+   * Adds one or multiple cards to the competitor's hand and increases its score.
+   * @param  {...Card} cards 
+   */
   addCardToHand(...cards) {
     for (let card of cards) {
       this.hand.push(card);
@@ -625,6 +664,15 @@ class Competitor {
     return [newXPoint, newYPoint];
   }
 
+  /**
+   * Method for drawing competitor in local space. 
+   * @param {number} rotationTransform Amount to rotate the point around the piece's centre, in degrees.
+   * @param {number} xScale Percentage number controlling the x values of each point, scaling it from each JigsawPiece's centre to it's original position. 
+   * @param {number} yScale Percentage number controlling the y values of each point, scaling it from each JigsawPiece's centre to it's original position. 
+   * @param {string} pass Render pass. Either shadow or object.
+   * @param {number} shadowX x offset for rendering the shadow.
+   * @param {number} shadowY y offset for rendering the shadow.
+   */
   draw(rotationTransform, xScale, yScale, pass, shadowX, shadowY) {
     let transformedPoint;
     
@@ -768,6 +816,8 @@ class Competitor {
     return [newPointX, newPointY];
   }
 }
+
+// Colour constants that are used across every file.
 
 const SHADOW_COL = [30, 30, 30, 40];
 const HIGHLIGHT_COL = [249, 232, 127, 70];

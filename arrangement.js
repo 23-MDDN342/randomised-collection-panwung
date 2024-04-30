@@ -334,7 +334,7 @@ class Board {
   }
 
   /**
-   * Draws the JigsawPiece objects.
+   * Draws the JigsawPiece objects in global transformed space.
    * Must first calculate transformation in x, y, and rotation so that the pieces tile correctly.
    * @param {number} rotationTransform Amount to rotate the point around the piece's centre, in degrees.
    * @param {number} xScale Percentage number controlling the x values of each point, scaling it from each JigsawPiece's centre to it's original position. 
@@ -444,7 +444,7 @@ class Board {
   }
 
   /**
-   * Based on translated, draw.
+   * Draw based on transformations.
    * @param {number} translationXY Translation distance for points.
    * @param {number} rotationTransform Amount to rotate the point around the piece's centre, in degrees.
    * @param {number} xScale Percentage number controlling the x values of each point, scaling it from each JigsawPiece's centre to it's original position. 
