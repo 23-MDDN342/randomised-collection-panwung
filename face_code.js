@@ -135,14 +135,14 @@ class JigsawPiece {
    * @param {number} edgeLength Edge length of triangle.
    * @param {number} notchDisplacement Notch displacement from edge.
    * @param {number} notchLength Size of the notch.
-   * @param {boolean} unplaced Boolean flagging whether a piece is unplaced or not.
-   * @param {Array<number>} variance Array containing minimum and maximum rotational and positional variation, assuming it is unplaced.
+   * @param {boolean} scattered Boolean flagging whether a piece is scattered or not.
+   * @param {Array<number>} variance Array containing minimum and maximum rotational and positional variation, assuming it is scattered.
    */
-  constructor(x, y, gridPos, edgeLength, notchDisplacement, notchLength, unplaced=false, variance=[0, 0, 0]) {
+  constructor(x, y, gridPos, edgeLength, notchDisplacement, notchLength, scattered=false, variance=[0, 0, 0]) {
     this.x = x;
     this.y = y;
     this.gridPos = gridPos;
-    this.unplaced = unplaced;
+    this.scattered = scattered;
     this.variance = variance;
 
     this.edgeLength = edgeLength;

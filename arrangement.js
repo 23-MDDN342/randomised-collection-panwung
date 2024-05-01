@@ -11,12 +11,12 @@ class Board {
    * @param {number} edgeLength Edge length of triangle.
    * @param {number} notchDisplacement Notch displacement from edge.
    * @param {number} notchLength Size of the notch.
-   * @param {number} unplacedChance Percentage chance that a piece is unplaced.
+   * @param {number} scatteredChance Percentage chance that a piece is scattered.
    * @param {Array<number>} variance Array containing minimum and maximum rotational and positional variation, in the order x y, rot (degrees).
    * @param {number} playerStop Number that the player stops pulling cards at.
    * @param {number} dealerStop Number that the dealer stops pulling cards at.
    */
-  constructor(x, y, rows, columns, edgeLength, notchDisplacement, notchLength, unplacedChance=0, variance=[], playerStop=19, dealerStop=17) {
+  constructor(x, y, rows, columns, edgeLength, notchDisplacement, notchLength, scatteredChance=0, variance=[], playerStop=19, dealerStop=17) {
     this.deck = Card.createDeck(); // Create deck
     this.jigsawPieces = [];
 
@@ -30,7 +30,7 @@ class Board {
     this.edgeLength = edgeLength;
     this.notchDisplacement = notchDisplacement;
     this.notchLength = notchLength;
-    this.unplacedChance = unplacedChance;
+    this.scatteredChance = scatteredChance;
     this.variance = variance;
   }
 
@@ -39,7 +39,7 @@ class Board {
    */
   newBoard() {
     this.createJigsawPieces();
-    this.generateNotches();
+    this.generateEdges();
     this.generateFaces();
   }
 
@@ -55,13 +55,13 @@ class Board {
       for (let r=0; r<this.rows; r++) {
 
         // Random value determining whether a piece will be.
-        let isUnplaced = (this.unplacedChance / 100 > Math.random());
+        let isscattered = (this.scatteredChance / 100 > Math.random());
 
-        // Based on whether a piece is unplaced, give it some random variation too all transforms aside from scale.
+        // Based on whether a piece is scattered, give it some random variation too all transforms aside from scale.
         let xVariation = 0;
         let yVariation = 0;
         let rotVariation = 0;
-        if (isUnplaced) {
+        if (isscattered) {
           xVariation = Math.random() * 2 * this.variance[0] - this.variance[0];
           yVariation = Math.random() * 2 * this.variance[1] - this.variance[1];
           rotVariation = Math.random() * 2 * this.variance[2] - this.variance[2];
@@ -75,7 +75,7 @@ class Board {
           this.edgeLength,
           this.notchDisplacement,
           this.notchLength,
-          isUnplaced,
+          isscattered,
           [xVariation, yVariation, rotVariation]
         );
         
@@ -100,12 +100,26 @@ class Board {
   }
 
   /**
-   * Pulls a random card from a given array of cards.
+   * Pulls a random card from a given array of cards. Note that this does NOT remove the chosen card from the deck.
    * @param {Array<Card>} deck Deck of cards.
+   * @param {Array<Card>} exclude Cards to exclude from search.
    * @returns {Card} A random card from the provided deck.
    */
-  pullRandom(deck) {
-    return deck[ Math.floor( Math.random() * deck.length ) ];
+  pullRandom(deck, exclude=[]) {
+    let chosen;
+    do {
+      chosen = deck[ Math.floor( Math.random() * deck.length ) ];
+    }
+    while (exclude.includes(chosen));
+    return chosen
+  }
+
+  /**
+   * Randomly returns true or false.
+   * @returns {boolean} Outcome of coin flip.
+   */
+  coinflip() {
+    return Math.random() < 0.5;
   }
 
   /**
@@ -136,7 +150,7 @@ class Board {
   /**
    * Generates the notches of each JigsawPiece object through comparisons with their neighbouring pieces.
    */
-  generateNotches() {
+  generateEdges() {
     for (let c=0; c<this.jigsawPieces.length; c++) {
       for (let r=0; r<this.jigsawPieces[0].length; r++) {
         let jp = this.jigsawPieces[c][r];
@@ -169,24 +183,44 @@ class Board {
         let player = jp.player;
         let dealer = jp.dealer;
 
+        let exclude = [];
+        exclude.push(...player.hand);
+        exclude.push(...dealer.hand);
+
+        let card;
+
         // --------------------- PLAYER AND DEALER AI --------------------- //  
 
         // The player, like in actual Blackjack, can only see the dealer's first card.
         while (player.score < this.playerStop) {
           // If the player's score is less than 11, it will pull.
-          if (player.score < 11) { this.addToHand(player, this.pullRandom(this.deck)); }
+          if (player.score < 11) { 
+            card = this.pullRandom(this.deck, exclude);
+            exclude.push(card);
+            this.addToHand(player, card); 
+          }
 
           // If the player's score is less than 15 but the dealer's visible card is a 10 or ace, panic pull.
-          if (player.score < 15 && dealer.hand[0].value >= 10) { this.addToHand(player, this.pullRandom(this.deck)); }
+          if (player.score < 15 && dealer.hand[0].value >= 10) { 
+            card = this.pullRandom(this.deck, exclude);
+            exclude.push(card);
+            this.addToHand(player, card); 
+          }
 
           // If the player's score is less than 15, flip a coin to either pull again or stop.
-          if (player.score < 15 && Math.random() < 0.5) { this.addToHand(player, this.pullRandom(this.deck)); }
+          if (player.score < 15 && this.coinflip()) { 
+            card = this.pullRandom(this.deck, exclude);
+            exclude.push(card);
+            this.addToHand(player, card); 
+          }
           else { break; }
         }
 
         // Dealer simply pulls until its score reaches 17 or higher, unless the player has gone bust.
         while (dealer.score < this.dealerStop && player.score < 22) {
-          this.addToHand(dealer, this.pullRandom(this.deck));
+          card = this.pullRandom(this.deck, exclude);
+          exclude.push(card);
+          this.addToHand(dealer, card); 
         }
 
         // --------------------- WIN/LOSE LOGIC --------------------- //  
@@ -421,7 +455,7 @@ class Board {
     this._render(translationXY, rotationTransform, xScale, yScale, "shadow", shadowX, shadowY);
     this._render(translationXY, rotationTransform, xScale, yScale, "object", 0, 0);
     
-    // Unplaced layer
+    // Scattered layer
     this._render(translationXY, rotationTransform, xScale, yScale, "shadow", shadowX, shadowY, true);
     this._render(translationXY, rotationTransform, xScale, yScale, "object", 0, 0, true);
   }
@@ -451,23 +485,23 @@ class Board {
    * @param {number} yScale Percentage number controlling the y values of each point, scaling it from each JigsawPiece's centre to it's original position. 
    * @param {number} shadowX x offset for rendering the shadow.
    * @param {number} shadowY y offset for rendering the shadow.
-   * @param {boolean} isUnplacedLayer Boolean which flags whether the current layer being drawn is for placed or unplaced pieces.
+   * @param {boolean} isScatteredLayer Boolean which flags whether the current layer being drawn is for placed or scattered pieces.
    */
-  _render(translationXY, rotationTransform, xScale, yScale, pass, shadowX, shadowY, isUnplacedLayer=false) {
+  _render(translationXY, rotationTransform, xScale, yScale, pass, shadowX, shadowY, isScatteredLayer=false) {
     push();
     angleMode(RADIANS);
 
     for (let c=0; c<this.jigsawPieces.length; c++) {
       for (let r=0; r<this.jigsawPieces[0].length; r++) {
         let jp = this.jigsawPieces[c][r];
-        if (!jp.unplaced && !isUnplacedLayer) {
+        if (!jp.scattered && !isScatteredLayer) {
           jp.draw(
             r * -translationXY[0] - c * translationXY[2], 
             r * translationXY[1] - c * translationXY[3], 
             rotationTransform, xScale, yScale, pass, shadowX, shadowY
           );
         }
-        else if (jp.unplaced && isUnplacedLayer) {
+        else if (jp.scattered && isScatteredLayer) {
           jp.draw(
             r * -translationXY[0] - c * translationXY[2], 
             r * translationXY[1] - c * translationXY[3], 
@@ -513,7 +547,7 @@ const SCALE_X = 0;
 const SCALE_Y = 20;
 const NOTCH_DISPLACEMENT = 11;
 const NOTCH_LENGTH = 10;
-const UNPLACED_CHANCE = 40;
+const SCATTERED_CHANCE = 40;
 const VARIANCE = [
   40, // x
   20, // y
@@ -532,7 +566,7 @@ const BOX_DEPTH = BOX_WIDTH/7;
 const BOX_ROT = ROTATION - 15;
 const BOX_SHADOW_LENGTH = BOX_WIDTH/8;
 
-const board = new Board(canvasWidth * 6/10, canvasHeight/16, ROWS, COLS, EDGE_LENGTH, NOTCH_DISPLACEMENT, NOTCH_LENGTH, UNPLACED_CHANCE, VARIANCE);
+const board = new Board(canvasWidth * 6/10, canvasHeight/16, ROWS, COLS, EDGE_LENGTH, NOTCH_DISPLACEMENT, NOTCH_LENGTH, SCATTERED_CHANCE, VARIANCE);
 board.newBoard();
 
 /**
