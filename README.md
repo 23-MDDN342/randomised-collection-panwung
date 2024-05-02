@@ -12,16 +12,16 @@ Finally it came down to the method of randomisation. Being shown a pack of cards
 
 *** Randomisation ***
 There are only three instances of randomisation used in the Board class: 
-    pullRandom(...) will choose a random card from a deck and assign it to a competitor (player or dealer). The bound is locally defined in the method as:
+    pullRandom(...) will choose a random card from a deck and assign it to a competitor (player or dealer). The bound is externally defined through the array parameter 'deck' as:
         0 <= x < deck.length,
-        where deck.length is the length of the deck and is discrete,
-        where x is Math.floor(Math.random() * deck.length) and is discrete
+        where deck.length is the length of the array 'deck' and is discrete,
+        where x is a random integer and is discrete
 
-    coinflip() is a 50/50 chance to return true or false, and is used to make player competitors risk getting a higher score. The bound is locally defined in the method as:
+    coinflip() is a 50/50 chance to return true or false, and is used to make player competitors risk pulling another card to try to get a higher score. The bound is locally defined in the method as:
         0 <= x < 1,
         where x is a random float and is continuous
     
-    createJigsawPieces() uses random percentage chance to decide whether a piece is 'in place' or 'scattered', as well as providing a randomised position and rotation to that scattered piece. The bounds for these three properties is provided externally through the array VARIANCE, as:
+    createJigsawPieces() uses random percentage chance to decide whether a piece is 'in place' or 'scattered', as well as providing a randomised position and rotation to that scattered piece. The bounds for these three properties is provided externally through the array 'VARIANCE', as:
         -NOTCH_LENGTH * 4 < x < NOTCH_LENGTH * 4,
         -NOTCH_LENGTH * 2 < y < NOTCH_LENGTH * 2,
         -180(d) < theta(d) < 180(d),
