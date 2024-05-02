@@ -797,6 +797,7 @@ class Competitor {
       }
 
       // --------------------- HIGHLIGHT --------------------- //
+      
       noFill();
       stroke(HIGHLIGHT_COL);
       beginShape();
@@ -809,6 +810,13 @@ class Competitor {
     pop();
   }
 
+  /**
+   * Rotate a point around a given centre point.
+   * @param {Array<number>} point Point to rotate.
+   * @param {Array<number>} centre Centre point to rotate around.
+   * @param {number} angle Angle to rotate point by, in radians.
+   * @returns {Array<number>} The resulting rotated point.
+   */
   rotatePoint(point, centre, angle) {
     let newPointX = (point[0] - centre[0]) * Math.cos(angle) - (point[1] - centre[1]) * Math.sin(angle) + centre[0];
     let newPointY = (point[0] - centre[0]) * Math.sin(angle) + (point[1] - centre[1]) * Math.cos(angle) + centre[1];

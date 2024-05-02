@@ -541,27 +541,27 @@ const millisPerSwap = 3000;
 
 const ROWS = 7;
 const COLS = 6;
-const EDGE_LENGTH = 100;
+const EDGE_LENGTH = canvasHeight/5;
 const ROTATION = 30;
 const SCALE_X = 0;
 const SCALE_Y = 20;
-const NOTCH_DISPLACEMENT = 11;
-const NOTCH_LENGTH = 10;
+const NOTCH_LENGTH = EDGE_LENGTH/10;
+const NOTCH_DISPLACEMENT = NOTCH_LENGTH * 1.1;
 const SCATTERED_CHANCE = 40;
 const VARIANCE = [
-  40, // x
-  20, // y
+  NOTCH_LENGTH * 4, // x
+  NOTCH_LENGTH * 2, // y
   180 // rot
 ];
 
-const SHADOW_X = 10;
-const SHADOW_Y = 5;
+const SHADOW_X = NOTCH_LENGTH;
+const SHADOW_Y = NOTCH_LENGTH/2;
 const SHADOW_ANGLE = Math.atan(SHADOW_Y / SHADOW_X); // RADIANS
 
-const BOX_X = -30;
+const BOX_X = -NOTCH_LENGTH * 3;
 const BOX_Y = 0;
-const BOX_WIDTH = 330;
-const BOX_LENGTH = 500;
+const BOX_WIDTH = EDGE_LENGTH * 3.3;
+const BOX_LENGTH = EDGE_LENGTH * 5;
 const BOX_DEPTH = BOX_WIDTH/7;
 const BOX_ROT = ROTATION - 15;
 const BOX_SHADOW_LENGTH = BOX_WIDTH/8;
@@ -784,14 +784,17 @@ function mouseClicked() {
 }
 
 function draw() {
+  // Draw main elements.
   drawTable(canvasWidth, canvasHeight, ROTATION, SCALE_X, SCALE_Y);
   board.draw(ROTATION, SCALE_X, SCALE_Y, SHADOW_X, SHADOW_Y); 
   drawPieceBox(BOX_X, BOX_Y, BOX_WIDTH, BOX_LENGTH, BOX_DEPTH, BOX_ROT, SCALE_X, SCALE_Y, SHADOW_ANGLE, BOX_SHADOW_LENGTH, board.getHighestSymbol(), board.getHighestSuit());
 
+  // Draw some additional shadows to make things look less boring.
   push();
   noStroke();
   fill([40, 40, 40, 70]);
 
+  // Top shadow
   beginShape();
   vertex(width/4, 0);
   vertex(width, width * 3/4 * Math.tan(SHADOW_ANGLE));
@@ -799,6 +802,7 @@ function draw() {
   endShape(CLOSE);
   pop();
 
+  // Bottom shadow
   push();
   noStroke();
   fill([40, 40, 40, 70]);

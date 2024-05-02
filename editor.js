@@ -82,8 +82,6 @@ function setup () {
   faceSelector.parent('selector1Container');
 }
 
-
-
 function draw () {
   strokeWeight(0.2);
 
