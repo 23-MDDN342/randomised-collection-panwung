@@ -154,7 +154,7 @@ class JigsawPiece {
   }
 
   /**
-   * Gemerates an array of points for a given competitror in order to draw its face.
+   * Gemerates an array of points for a given competitor in order to draw its face.
    * @param {Competitor} competitor Competitor object.
    */
   generateFace(competitor) {
